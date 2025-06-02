@@ -213,7 +213,7 @@ parts:
       SERVER_JAR=management-api-server
 
       cp "$AGENT_JAR"/target/datastax-mgmtapi-agent-5.0.x-0.1.104.jar \
-      ${CRAFT_PART_INSTALL}/opt/mgmt-api/libs/datastax-mgmtapi-agent.jarb
+      ${CRAFT_PART_INSTALL}/opt/mgmt-api/libs/datastax-mgmtapi-agent.jar
 
       cp "$SERVER_JAR"/target/datastax-mgmtapi-server-0.1.104.jar \
       ${CRAFT_PART_INSTALL}/opt/mgmt-api/libs/datastax-mgmtapi-server.jar
