@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -eux
+
+
+source "${SNAP_CURRENT}"/opt/shared/bin/snap-logger.sh "hook-install"
+source "${SNAP_CURRENT}"/opt/shared/bin/io.sh
+source "${SNAP_CURRENT}"/opt/shared/bin/set-conf.sh
+
+
+function create_file_structure () {
+    declare -a folders=(
+        "${CASSANDRA_CONF}"
+        "${CASSANDRA_HOME}"
+        "${CASSANDRA_LOG_DIR}"
+        "${HOME}"
+        "${CASSANDRA_HINTS_DIR}"
+        "${CASSANDRA_DATA_DIR}"
+        "${CASSANDRA_COMMIT_LOG_DIR}"
+        "${CASSANDRA_SAVED_CACHES_DIR}"
+        "${CASSANDRA_PATH_CERTS}"
+    )
+    for f in "${folders[@]}"; do
+        if [ ! -d "${f}" ]; then
+           add_folder "${f}" 775	
+        fi
+    done
+
+    copy_files_between_folder "${SNAP}/etc/cassandra/" "${CASSANDRA_CONF}/"
+    copy_files_between_folder "${SNAP}/opt/cassandra/" "${CASSANDRA_HOME}/"
+}
+
+function set_base_config_props () {
+    set_yaml_prop "${CASSANDRA_CONF}/cassandra.yaml" "hints_directory" "${CASSANDRA_HINTS_DIR}"
+    set_yaml_prop "${CASSANDRA_CONF}/cassandra.yaml" "data_file_directories" "[${CASSANDRA_DATA_DIR}]"
+    set_yaml_prop "${CASSANDRA_CONF}/cassandra.yaml" "commitlog_directory" "${CASSANDRA_COMMIT_LOG_DIR}"
+    set_yaml_prop "${CASSANDRA_CONF}/cassandra.yaml" "saved_caches_directory" "${CASSANDRA_SAVED_CACHES_DIR}"
+}
+
+create_file_structure
+set_base_config_props
+
+declare -a folders=("${SNAP_DATA}")
+for f in "${folders[@]}"; do
+    chgrp root "${f}/"*
+done
