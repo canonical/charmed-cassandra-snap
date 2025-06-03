@@ -1,4 +1,4 @@
-# cassandra-snap
+# charmed-cassandra-snap
 
 ### Build
 `snapcraft`
