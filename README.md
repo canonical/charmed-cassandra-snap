@@ -23,7 +23,17 @@ JVM_OPTS="$JVM_OPTS -javaagent:/snap/cassandra/current/opt/mgmt-api/libs/datasta
 ```
 ### Start
 To start cassndra:
-`sudo snap start cassandra.daemon`
+```
+sudo snap start cassandra.daemon
+```
 
 To start cassandra with management API server:
-`sudo snap start cassandra.mgmt-server`
+```
+sudo snap start cassandra.mgmt-server
+```
+
+### Testing
+After cassandra is up you can ran test with: 
+```
+tox -vve smoke
+```
