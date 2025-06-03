@@ -1,0 +1,84 @@
+name: Build and Test
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_call:
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint
+    uses: canonical/data-platform-workflows/.github/workflows/lint.yaml@v32.0.0
+
+  build:
+    name: Build snap
+    uses: canonical/data-platform-workflows/.github/workflows/build_snap.yaml@v32.0.0
+
+  test:
+    name: Test Snap
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs:
+      - lint    
+      - build
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install required dependencies
+        run: |
+          sudo snap install yq
+          pipx install tox
+          pipx install poetry	  
+
+      - name: Download snap package(s)
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ${{ needs.build.outputs.artifact-prefix }}-*
+          merge-multiple: true
+
+      - name: Install snap file
+        run: |
+          version="$(yq .version < snap/snapcraft.yaml)"
+          sudo snap remove --purge cassandra || true
+          sudo snap install "cassandra_${version}_amd64.snap" --dangerous --devmode
+
+      - name: Connect required interfaces
+        run: |
+          sudo snap connect cassandra:log-observe
+          sudo snap connect cassandra:mount-observe
+          sudo snap connect cassandra:process-control
+          sudo snap connect cassandra:system-observe
+          sudo snap connect cassandra:sys-fs-cgroup-service
+          sudo snap connect cassandra:shmem-perf-analyzer
+
+      - name: Setup and Start Cassandra
+        run: |
+          sudo snap start cassandra.daemon
+          sleep 240s
+
+      - name: Ensure the cluster is reachable and node created via tests
+        run: tox run -e smoke
+
+      - name: Upgrade snap
+        run: |
+          version="$(yq .version < snap/snapcraft.yaml)"
+          sudo snap install "cassandra_${version}_amd64.snap" --dangerous --devmode
+
+          if [ -d /var/snap/cassandra/x2 ]; then
+              echo "Snap upgraded."
+          else
+              echo "Snap upgrade check failed: x2 revision directory not found."
+              exit 1
+          fi
+
+          sudo snap start cassandra.daemon
+          sleep 240s
+
+      - name: Ensure the cluster is reachable and node created after upgrade
+        run: tox run -e smoke
