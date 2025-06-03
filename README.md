@@ -22,4 +22,8 @@ To setup management server add this line to the end of the cassandra-env.sh file
 JVM_OPTS="$JVM_OPTS -javaagent:/snap/cassandra/current/opt/mgmt-api/libs/datastax-mgmtapi-agent.jar"
 ```
 ### Start
+To start cassndra:
 `sudo snap start cassandra.daemon`
+
+To start cassandra with management API server:
+`sudo snap start cassandra.mgmt-server`
