@@ -9,12 +9,7 @@ Charmed solution for Cassandra
 
 ### Setup
 ```
-    sudo snap connect cassandra:log-observe
-    sudo snap connect cassandra:mount-observe
-    sudo snap connect cassandra:process-control
-    sudo snap connect cassandra:system-observe
-    sudo snap connect cassandra:sys-fs-cgroup-service
-    sudo snap connect cassandra:shmem-perf-analyzer
+make connect-interfaces
 ```
 
 To setup management server add this line to the end of the cassandra-env.sh file:
@@ -23,17 +18,7 @@ JVM_OPTS="$JVM_OPTS -javaagent:/snap/cassandra/current/opt/mgmt-api/libs/datasta
 ```
 ### Start
 To start cassndra:
-```
-sudo snap start cassandra.daemon
-```
+`sudo snap start cassandra.daemon`
 
 To start cassandra with management API server:
-```
-sudo snap start cassandra.mgmt-server
-```
-
-### Testing
-After cassandra is up you can ran test with: 
-```
-tox -vve smoke
-```
+`sudo snap start cassandra.mgmt-server`

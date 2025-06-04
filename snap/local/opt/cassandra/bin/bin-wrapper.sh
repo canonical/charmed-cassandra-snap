@@ -4,6 +4,6 @@ set -e
 
 "${SNAP}"/usr/bin/setpriv \
     --clear-groups \
-    --reuid snap_daemon \
-    --regid snap_daemon -- \
-    ${CASSANDRA_BIN}/${bin_script} "${@}"
+    --reuid _daemon_ \
+    --regid _daemon_ -- \
+    ${SNAP_CURRENT}/opt/cassandra/bin/${bin_script} "${@}"

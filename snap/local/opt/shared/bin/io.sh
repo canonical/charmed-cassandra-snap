@@ -8,7 +8,7 @@ function set_access_restrictions () {
         chmod -R "${2}" "${1}"
     fi
 
-    chown -R snap_daemon "${1}"
+    chown -R _daemon_ "${1}"
     chgrp root "${1}"
 }
 

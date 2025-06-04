@@ -3,7 +3,7 @@
 
 function replace_in_file() {
     "${SNAP}"/usr/bin/setpriv \
-        --reuid snap_daemon -- sed -i "s@${2}@${3}@" "${1}"
+        --reuid _daemon_ -- sed -i "s@${2}@${3}@" "${1}"
 }
 
 function remove_yaml_prop() {

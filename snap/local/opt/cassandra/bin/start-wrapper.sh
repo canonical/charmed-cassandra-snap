@@ -18,14 +18,10 @@ for arg in "$@"; do
   esac
 done
 
-# TODO: make shure not to launch cassandra while mgmt-server is up, or vise versa. Maybe by checking /tmp/snap-private-tmp/snap.cassandra/tmp/cassandra.pid is exists
 function start_cassandra () {
-    exit_if_missing_perm "log-observe"
-    exit_if_missing_perm "mount-observe"
     exit_if_missing_perm "sys-fs-cgroup-service"
     exit_if_missing_perm "system-observe"
-
-    warn_if_missing_perm "process-control"
+    exit_if_missing_perm "process-control"
 
     if [ "$WITH_API" = true ]; then
         echo "Starting Cassandra with management API..."
@@ -47,16 +43,16 @@ function start_cassandra () {
 	
         "${SNAP}"/usr/bin/setpriv \
             --clear-groups \
-            --reuid snap_daemon \
-            --regid snap_daemon -- \
+            --reuid _daemon_ \
+            --regid _daemon_ -- \
             ${JAVA_HOME}/bin/java -jar ${MGMT_API_DIR}/libs/datastax-mgmtapi-server.jar -S /tmp/db.sock -H tcp://127.0.0.1:${MGMT_API_PORT}
     else
         echo "Starting Cassandra..."
         "${SNAP}"/usr/bin/setpriv \
             --clear-groups \
-            --reuid snap_daemon \
-            --regid snap_daemon -- \
-            "${CASSANDRA_BIN}"/cassandra -f
+            --reuid _daemon_ \
+            --regid _daemon_ -- \
+            ${SNAP_CURRENT}/opt/cassandra/bin/cassandra -f
     fi
 }
 

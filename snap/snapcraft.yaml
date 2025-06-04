@@ -20,7 +20,7 @@ website: https://github.com/apache/cassandra
 license: Apache-2.0
 
 system-usernames:
-  snap_daemon: shared
+  _daemon_: shared
 
 plugs:
   shmem-perf-analyzer:
@@ -46,40 +46,25 @@ hooks:
       - network-bind
       - shmem-perf-analyzer
     environment:
-      CASSANDRA_ROOT: ${SNAP_CURRENT}/opt/cassandra
+      CASSANDRA_HINTS_DIR: ${SNAP_COMMON}/var/lib/cassandra/hints
+      CASSANDRA_DATA_DIR: ${SNAP_COMMON}/var/lib/cassandra/data
+      CASSANDRA_COMMIT_LOG_DIR: ${SNAP_COMMON}/var/lib/cassandra/commitlog
+      CASSANDRA_SAVED_CACHES_DIR: ${SNAP_COMMON}/var/lib/cassandra/saved_caches
+
 
 environment:
   SNAP_CURRENT: /snap/cassandra/current
   SNAP_DATA_CURRENT: /var/snap/cassandra/current
+
   JAVA_HOME: ${SNAP}/usr/lib/jvm/java-11-openjdk-amd64
-  HOME: ${SNAP_COMMON}/home/snap_daemon
-
-  SNAP_LOG_DIR: ${SNAP_COMMON}/ops/snap/logs
-  CASSANDRA_ROOT: ${SNAP_CURRENT}/opt/cassandra
-
-  CASSANDRA_BIN: ${SNAP_CURRENT}/opt/cassandra/bin
-  CASSANDRA_TOOLS_BIN: ${SNAP_CURRENT}/opt/cassandra/tools/bin
 
   CASSANDRA_HOME: ${SNAP_DATA_CURRENT}/opt/cassandra
 
-  CASSANDRA_LIB: ${CASSANDRA_HOME}/lib
-
   CASSANDRA_CONF: ${SNAP_DATA_CURRENT}/etc/cassandra
-  CASSANDRA_PATH_CERTS: ${SNAP_DATA_CURRENT}/etc/cassandra/certificates
-
-  PATH: ${CASSANDRA_BIN}:${CASSANDRA_HOME}:${JAVA_HOME}/bin:$PATH
 
   CASSANDRA_LOG_DIR: ${SNAP_COMMON}/var/log/cassandra
 
-  CASSANDRA_HINTS_DIR: ${SNAP_COMMON}/var/lib/cassandra/hints
-  CASSANDRA_DATA_DIR: ${SNAP_COMMON}/var/lib/cassandra/data
-  CASSANDRA_COMMIT_LOG_DIR: ${SNAP_COMMON}/var/lib/cassandra/commitlog
-  CASSANDRA_SAVED_CACHES_DIR: ${SNAP_COMMON}/var/lib/cassandra/saved_caches
-
-  MGMT_API_DIR: /snap/cassandra/current/opt/mgmt-api
-  MGMT_API_PORT: 8080
-  MGMT_API_LOG_DIR: ${CASSANDRA_LOG_DIR}
-  MGMT_API_DISABLE_MCAC: "true"
+  PATH: ${SNAP_CURRENT}/opt/cassandra/bin:${JAVA_HOME}/bin:$PATH
 
 apps:
   daemon:
@@ -115,6 +100,11 @@ apps:
       - shmem-perf-analyzer
       - system-observe
       - sys-fs-cgroup-service
+    environment:
+      MGMT_API_LOG_DIR: ${CASSANDRA_LOG_DIR}
+      MGMT_API_DISABLE_MCAC: "true"
+      MGMT_API_DIR: ${SNAP_CURRENT}/opt/mgmt-api
+      MGMT_API_PORT: 8080
 
   cassandra-bin:
     command: opt/cassandra/bin/bin-wrapper.sh
@@ -141,13 +131,12 @@ apps:
       bin_script: stop-server
 
   cqlsh:
-    command: opt/cassandra/bin/bin-wrapper.sh
+    command: opt/cqlsh/bin/python-wrapper.sh
     plugs:
       - network
       - network-bind
     environment:
-      bin_script: cqlsh
-      USER_SPECIFIED_PYTHON: ${SNAP_CURRENT}/usr/bin/python3.9
+      bin: cqlsh
 
   stress:
     command: opt/cassandra/bin/tool-wrapper.sh
@@ -162,11 +151,6 @@ apps:
     plugs:
       - mount-observe
 
-package-repositories:
-  - type: apt
-    ppa: deadsnakes/ppa
-    priority: always
-
 parts:
   dependencies:
     plugin: nil
@@ -175,6 +159,7 @@ parts:
     stage-packages:
       - util-linux
       - openjdk-11-jre-headless
+      - python3
       - curl
       - net-tools
       - lsof
@@ -185,6 +170,11 @@ parts:
       - iproute2
       - numactl
       - libev4t64
+
+  cqlsh:
+    plugin: python
+    source: https://github.com/jeffwidman/cqlsh.git
+    source-tag: 6.2.0
 
   wrapper-scripts:
     plugin: nil
@@ -197,8 +187,12 @@ parts:
       target_shared_dir="${CRAFT_PART_INSTALL}/opt/shared/bin"
       mkdir -p "${target_shared_dir}"
 
+      target_cqlsh_dir="${CRAFT_PART_INSTALL}/opt/cqlsh/bin"
+      mkdir -p "${target_cqlsh_dir}"
+
       cp -r opt/cassandra/bin/* "${target_cassandra_dir}"
       cp -r opt/shared/bin/* "${target_shared_dir}"
+      cp -r opt/cqlsh/bin/* "${target_cqlsh_dir}"
 
   mgmt-api:
     plugin: nil
@@ -207,7 +201,7 @@ parts:
     build-packages:
       - unzip
     override-build: |
-      mkdir -p ${CRAFT_PART_INSTALL}/opt/mgmt-api
+      mkdir -p ${CRAFT_PART_INSTALL}/opt/mgmt-api/libs
 
       AGENT_JAR=management-api-agent-5.0.x
       SERVER_JAR=management-api-server
@@ -228,7 +222,6 @@ parts:
       - openjdk-11-jre-headless
     stage-packages:
       - openjdk-11-jdk-headless
-      - python3.9
     override-build: |
       apt-get update
       apt-get upgrade -y

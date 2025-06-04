@@ -13,12 +13,11 @@ function create_file_structure () {
         "${CASSANDRA_CONF}"
         "${CASSANDRA_HOME}"
         "${CASSANDRA_LOG_DIR}"
-        "${HOME}"
+        "${SNAP_COMMON}/home/_daemon_"
         "${CASSANDRA_HINTS_DIR}"
         "${CASSANDRA_DATA_DIR}"
         "${CASSANDRA_COMMIT_LOG_DIR}"
         "${CASSANDRA_SAVED_CACHES_DIR}"
-        "${CASSANDRA_PATH_CERTS}"
     )
     for f in "${folders[@]}"; do
         if [ ! -d "${f}" ]; then
