@@ -22,16 +22,6 @@ license: Apache-2.0
 system-usernames:
   _daemon_: shared
 
-plugs:
-  shmem-perf-analyzer:
-    interface: shared-memory
-    private: true
-
-  sys-fs-cgroup-service:
-    interface: system-files
-    read:
-      - /sys/fs/cgroup/system.slice/snap.cassandra.daemon.service
-
 slots:
   logs:
     interface: content
@@ -44,27 +34,22 @@ hooks:
     plugs:
       - network
       - network-bind
-      - shmem-perf-analyzer
     environment:
       CASSANDRA_HINTS_DIR: ${SNAP_COMMON}/var/lib/cassandra/hints
       CASSANDRA_DATA_DIR: ${SNAP_COMMON}/var/lib/cassandra/data
       CASSANDRA_COMMIT_LOG_DIR: ${SNAP_COMMON}/var/lib/cassandra/commitlog
       CASSANDRA_SAVED_CACHES_DIR: ${SNAP_COMMON}/var/lib/cassandra/saved_caches
 
-
 environment:
-  SNAP_CURRENT: /snap/cassandra/current
-  SNAP_DATA_CURRENT: /var/snap/cassandra/current
-
   JAVA_HOME: ${SNAP}/usr/lib/jvm/java-11-openjdk-amd64
 
-  CASSANDRA_HOME: ${SNAP_DATA_CURRENT}/opt/cassandra
+  CASSANDRA_HOME: ${SNAP_DATA}/opt/cassandra
 
-  CASSANDRA_CONF: ${SNAP_DATA_CURRENT}/etc/cassandra
+  CASSANDRA_CONF: ${SNAP_DATA}/etc/cassandra
 
   CASSANDRA_LOG_DIR: ${SNAP_COMMON}/var/log/cassandra
 
-  PATH: ${SNAP_CURRENT}/opt/cassandra/bin:${JAVA_HOME}/bin:$PATH
+  PATH: ${SNAP}/opt/cassandra/bin:${JAVA_HOME}/bin:$PATH
 
 apps:
   daemon:
@@ -77,12 +62,8 @@ apps:
       - network
       - network-bind
       - hardware-observe
-      - log-observe
-      - mount-observe
       - process-control
-      - shmem-perf-analyzer
       - system-observe
-      - sys-fs-cgroup-service
 
   mgmt-server:
     daemon: simple
@@ -94,16 +75,12 @@ apps:
       - network
       - network-bind
       - hardware-observe
-      - log-observe
-      - mount-observe
       - process-control
-      - shmem-perf-analyzer
       - system-observe
-      - sys-fs-cgroup-service
     environment:
       MGMT_API_LOG_DIR: ${CASSANDRA_LOG_DIR}
       MGMT_API_DISABLE_MCAC: "true"
-      MGMT_API_DIR: ${SNAP_CURRENT}/opt/mgmt-api
+      MGMT_API_DIR: ${SNAP}/opt/mgmt-api
       MGMT_API_PORT: 8080
 
   cassandra-bin:
@@ -198,6 +175,8 @@ parts:
     plugin: nil
     source: >-
       https://github.com/k8ssandra/management-api-for-apache-cassandra/releases/download/v0.1.104/jars.zip
+    source-checksum: >-
+      sha256/3fd7996186b6c7d0d4a78615f3a76adf9e36962f9f30bc761dba76d0047618c2
     build-packages:
       - unzip
     override-build: |

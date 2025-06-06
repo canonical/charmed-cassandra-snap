@@ -2,7 +2,7 @@
 
 set -eu
 
-source "${SNAP_CURRENT}"/opt/shared/bin/snap-interfaces.sh
+source "${SNAP}"/opt/shared/bin/snap-interfaces.sh
 
 WITH_API=false
 
@@ -19,9 +19,9 @@ for arg in "$@"; do
 done
 
 function start_cassandra () {
-    exit_if_missing_perm "sys-fs-cgroup-service"
     exit_if_missing_perm "system-observe"
     exit_if_missing_perm "process-control"
+    
 
     if [ "$WITH_API" = true ]; then
         echo "Starting Cassandra with management API..."
@@ -52,7 +52,7 @@ function start_cassandra () {
             --clear-groups \
             --reuid _daemon_ \
             --regid _daemon_ -- \
-            ${SNAP_CURRENT}/opt/cassandra/bin/cassandra -f
+            ${SNAP}/opt/cassandra/bin/cassandra -f
     fi
 }
 

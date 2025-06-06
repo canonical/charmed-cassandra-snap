@@ -3,9 +3,9 @@
 set -eux
 
 
-source "${SNAP_CURRENT}"/opt/shared/bin/snap-logger.sh "hook-install"
-source "${SNAP_CURRENT}"/opt/shared/bin/io.sh
-source "${SNAP_CURRENT}"/opt/shared/bin/set-conf.sh
+source "${SNAP}"/opt/shared/bin/snap-logger.sh "hook-install"
+source "${SNAP}"/opt/shared/bin/io.sh
+source "${SNAP}"/opt/shared/bin/set-conf.sh
 
 
 function create_file_structure () {

@@ -10,11 +10,16 @@ Charmed solution for Cassandra
 ### Setup
 ```
 make connect-interfaces
+make sysctl-tuning
 ```
 
 To setup management server add this line to the end of the cassandra-env.sh file:
 ```
 JVM_OPTS="$JVM_OPTS -javaagent:/snap/cassandra/current/opt/mgmt-api/libs/datastax-mgmtapi-agent.jar"
+```
+Or use makefile:
+```
+make enable-mgmtapi
 ```
 ### Start
 To start cassndra:
