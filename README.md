@@ -21,7 +21,7 @@ snapcraft pack
 ```
 
 ### Install
-`sudo snap install cassandra_5.0.4_amd64.snap --devmode`
+`sudo snap install charmed_cassandra*.snap --devmode`
 
 ### Setup
 ```
