@@ -1,4 +1,4 @@
-name: cassandra
+name: charmed-cassandra
 base: core24
 
 version: 5.0.4
