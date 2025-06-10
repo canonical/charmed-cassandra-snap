@@ -10,7 +10,7 @@ description: |
   or in containerized environments and supports integration with Juju charms.
 
 grade: stable
-confinement: devmode
+confinement: strict
 
 platforms:
   amd64:
