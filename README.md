@@ -46,3 +46,7 @@ To start cassandra with management API server:
 
 ## License
 The Apache Cassandra Snap is free software, distributed under the Apache Software License, version 2.0. See [LICENSE](https://github.com/canonical/charmed-cassandra-snap/LICENSE) for more information.
+
+## Trademark Notice
+Apache Cassandra and the Apache Cassandra logo are trademarks of the Apache Software Foundation. All other trademarks are the property of their respective owners.
+
