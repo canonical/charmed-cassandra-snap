@@ -43,3 +43,6 @@ To start cassndra:
 
 To start cassandra with management API server:
 `sudo snap start charmed-cassandra.mgmt-server`
+
+## License
+The Apache Cassandra Snap is free software, distributed under the Apache Software License, version 2.0. See [LICENSE](https://github.com/canonical/charmed-cassandra-snap/LICENSE) for more information.
