@@ -1,8 +1,8 @@
 .PHONY: connect-interfaces enable-mgmtapi
 
 connect-interfaces:
-	sudo snap connect cassandra:process-control
-	sudo snap connect cassandra:system-observe
+	sudo snap connect charmed-cassandra:process-control
+	sudo snap connect charmed-cassandra:system-observe
 
 # See: https://docs.datastax.com/en/cassandra-oss/3.0/cassandra/install/installRecommendSettings.html#Setuserresourcelimits
 sysctl-tuning:
@@ -12,6 +12,6 @@ sysctl-tuning:
 
 enable-mgmtapi:
 	@echo "\nEnabling Management API..."
-	@rev=$$(curl --silent --unix-socket /run/snapd.socket http://localhost/v2/snaps/cassandra | jq -r '.result.revision'); \
-	echo "JVM_OPTS=\"\$$JVM_OPTS -javaagent:/snap/cassandra/$${rev}/opt/mgmt-api/libs/datastax-mgmtapi-agent.jar\"" \
-	| sudo tee -a /var/snap/cassandra/current/etc/cassandra/cassandra-env.sh
+	@rev=$$(curl --silent --unix-socket /run/snapd.socket http://localhost/v2/snaps/charmed-cassandra | jq -r '.result.revision'); \
+	echo "JVM_OPTS=\"\$$JVM_OPTS -javaagent:/snap/charmed-cassandra/$${rev}/opt/mgmt-api/libs/datastax-mgmtapi-agent.jar\"" \
+	| sudo tee -a /var/snap/charmed-cassandra/current/etc/cassandra/cassandra-env.sh

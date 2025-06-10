@@ -31,7 +31,7 @@ make sysctl-tuning
 
 To setup management server add this line to the end of the cassandra-env.sh file:
 ```
-JVM_OPTS="$JVM_OPTS -javaagent:/snap/cassandra/current/opt/mgmt-api/libs/datastax-mgmtapi-agent.jar"
+JVM_OPTS="$JVM_OPTS -javaagent:/snap/charmed-cassandra/{revision}/opt/mgmt-api/libs/datastax-mgmtapi-agent.jar"
 ```
 Or use makefile:
 ```
@@ -39,7 +39,7 @@ make enable-mgmtapi
 ```
 ### Start
 To start cassndra:
-`sudo snap start cassandra.daemon`
+`sudo snap start charmed-cassandra.daemon`
 
 To start cassandra with management API server:
-`sudo snap start cassandra.mgmt-server`
+`sudo snap start charmed-cassandra.mgmt-server`
