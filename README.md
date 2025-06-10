@@ -2,8 +2,23 @@
 Charmed solution for Cassandra
 This repository contains the packaging metadata for creating a snap of Apache Cassandra. 
 For more information on snaps, visit [snapcraft.io](https://snapcraft.io/).
-### Build
-`snapcraft`
+
+## Building the snap
+### Clone Repository
+```
+git clone git@github.com:canonical/charmed-cassandra-snap.git
+cd charmed-cassandra-snap
+```
+### Installing and Configuring Prerequisites
+```
+sudo snap install snapcraft
+sudo snap install lxd
+sudo lxd init --auto
+```
+### Packing the snap 
+```
+snapcraft pack
+```
 
 ### Install
 `sudo snap install cassandra_5.0.4_amd64.snap --devmode`
