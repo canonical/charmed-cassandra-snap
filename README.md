@@ -1,6 +1,7 @@
 # charmed-cassandra-snap
 Charmed solution for Cassandra
-
+This repository contains the packaging metadata for creating a snap of Apache Cassandra. 
+For more information on snaps, visit [snapcraft.io](https://snapcraft.io/).
 ### Build
 `snapcraft`
 
