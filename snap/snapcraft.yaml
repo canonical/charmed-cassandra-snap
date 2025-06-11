@@ -80,7 +80,7 @@ apps:
     environment:
       MGMT_API_LOG_DIR: ${CASSANDRA_LOG_DIR}
       MGMT_API_DISABLE_MCAC: "true"
-      MGMT_API_DIR: ${SNAP}/opt/mgmt-api
+      MGMT_API_DIR: /snap/charmed-cassandra/current/opt/mgmt-api
       MGMT_API_PORT: 8080
 
   cassandra-bin:
