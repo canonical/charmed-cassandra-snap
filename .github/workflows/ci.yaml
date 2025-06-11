@@ -1,0 +1,104 @@
+name: Build and Test
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_call:
+
+jobs:
+  lint:
+    name: Lint
+    uses: canonical/data-platform-workflows/.github/workflows/lint.yaml@v32.0.0
+
+  build:
+    name: Build snap
+    uses: canonical/data-platform-workflows/.github/workflows/build_snap.yaml@v32.0.0
+
+  test:
+    name: Test Snap
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs:
+      - lint    
+      - build
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install required dependencies
+        run: |
+          sudo snap install yq
+          pipx install tox
+          pipx install poetry	  
+
+      - name: Download snap package(s)
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ${{ needs.build.outputs.artifact-prefix }}-*
+          merge-multiple: true
+
+      - name: Install snap file
+        run: |
+          version="$(yq .version < snap/snapcraft.yaml)"
+          sudo snap install "cassandra_${version}_amd64.snap" --dangerous --devmode
+
+      - name: Connect required interfaces
+        run: |
+          make connect-interfaces
+          make sysctl-tuning
+
+      - name: Setup and Start Cassandra
+        run: |
+          sudo snap start cassandra.daemon
+          until sudo snap run cassandra.nodetool status | grep -q "UN"; do
+              echo "Waiting for Cassandra to be ready..."
+              sleep 20s
+          done	  
+
+      - name: Ensure the cluster is reachable and node created via tests
+        run: tox run -e smoke
+
+      - name: Upgrade snap
+        run: |
+          version="$(yq .version < snap/snapcraft.yaml)"
+          sudo snap install "cassandra_${version}_amd64.snap" --dangerous --devmode
+
+          if [ -d /var/snap/cassandra/x2 ]; then
+              echo "Snap upgraded."
+          else
+              echo "Snap upgrade check failed: x2 revision directory not found."
+              exit 1
+          fi
+
+          sudo snap start cassandra.daemon
+          until sudo snap run cassandra.nodetool status | grep -q "UN"; do
+              echo "Waiting for Cassandra to be ready..."
+              sleep 20s
+          done	  
+
+      - name: Ensure the cluster is reachable and node created after upgrade
+        run: tox run -e smoke
+
+      - name: Setup and Start Cassandra with Management API
+        run: |
+          sudo snap stop cassandra.daemon
+      
+          echo "Enabling Management API..."
+          make enable-mgmtapi
+      
+          sudo snap start cassandra.mgmt-server
+          until curl http://localhost:8080/api/v0/metadata/endpoints | grep -q '"IS_ALIVE":"true"'; do
+              echo "Waiting for Cassandra to be ready..."
+              sleep 20s
+          done
+
+      - name: Ensure the cluster is reachable and node created after restart with Management API
+        run: tox run -e smoke

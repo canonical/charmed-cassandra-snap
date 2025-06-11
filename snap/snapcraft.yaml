@@ -1,0 +1,243 @@
+name: charmed-cassandra
+base: core24
+
+version: 5.0.4
+
+summary: Snap for Apache Cassandra – a distributed NoSQL database
+description: |
+  This snap provides Apache Cassandra, a highly scalable, high-performance
+  distributed database. This snap is intended for use with operators
+  or in containerized environments and supports integration with Juju charms.
+
+grade: stable
+confinement: strict
+
+platforms:
+  amd64:
+
+title: Apache Cassandra
+website: https://github.com/apache/cassandra
+license: Apache-2.0
+
+system-usernames:
+  _daemon_: shared
+
+slots:
+  logs:
+    interface: content
+    source:
+      read:
+        - $SNAP_COMMON/var/log/cassandra
+
+hooks:
+  install:
+    plugs:
+      - network
+      - network-bind
+    environment:
+      CASSANDRA_HINTS_DIR: ${SNAP_COMMON}/var/lib/cassandra/hints
+      CASSANDRA_DATA_DIR: ${SNAP_COMMON}/var/lib/cassandra/data
+      CASSANDRA_COMMIT_LOG_DIR: ${SNAP_COMMON}/var/lib/cassandra/commitlog
+      CASSANDRA_SAVED_CACHES_DIR: ${SNAP_COMMON}/var/lib/cassandra/saved_caches
+
+environment:
+  JAVA_HOME: ${SNAP}/usr/lib/jvm/java-11-openjdk-amd64
+
+  CASSANDRA_HOME: ${SNAP_DATA}/opt/cassandra
+
+  CASSANDRA_CONF: ${SNAP_DATA}/etc/cassandra
+
+  CASSANDRA_LOG_DIR: ${SNAP_COMMON}/var/log/cassandra
+
+  PATH: ${SNAP}/opt/cassandra/bin:${JAVA_HOME}/bin:$PATH
+
+apps:
+  daemon:
+    daemon: simple
+    command: opt/cassandra/bin/start-wrapper.sh
+    install-mode: disable
+    restart-condition: always
+    restart-delay: 20s
+    plugs:
+      - network
+      - network-bind
+      - hardware-observe
+      - process-control
+      - system-observe
+
+  mgmt-server:
+    daemon: simple
+    command: opt/cassandra/bin/start-wrapper.sh --with-api
+    install-mode: disable
+    restart-condition: always
+    restart-delay: 20s
+    plugs:
+      - network
+      - network-bind
+      - hardware-observe
+      - process-control
+      - system-observe
+    environment:
+      MGMT_API_LOG_DIR: ${CASSANDRA_LOG_DIR}
+      MGMT_API_DISABLE_MCAC: "true"
+      MGMT_API_DIR: ${SNAP}/opt/mgmt-api
+      MGMT_API_PORT: 8080
+
+  cassandra-bin:
+    command: opt/cassandra/bin/bin-wrapper.sh
+    plugs:
+      - network
+      - network-bind
+    environment:
+      bin_script: cassandra
+
+  nodetool:
+    command: opt/cassandra/bin/bin-wrapper.sh
+    plugs:
+      - network
+      - network-bind
+    environment:
+      bin_script: nodetool
+
+  stop-server:
+    command: opt/cassandra/bin/bin-wrapper.sh
+    plugs:
+      - network
+      - network-bind
+    environment:
+      bin_script: stop-server
+
+  cqlsh:
+    command: opt/cqlsh/bin/python-wrapper.sh
+    plugs:
+      - network
+      - network-bind
+    environment:
+      bin: cqlsh
+
+  stress:
+    command: opt/cassandra/bin/tool-wrapper.sh
+    plugs:
+      - network
+      - network-bind
+    environment:
+      bin_script: cassandra-stress
+
+  keytool:
+    command: usr/lib/jvm/java-11-openjdk-amd64/bin/keytool
+    plugs:
+      - mount-observe
+
+parts:
+  dependencies:
+    plugin: nil
+    stage-snaps:
+      - yq
+    stage-packages:
+      - util-linux
+      - openjdk-11-jre-headless
+      - python3
+      - curl
+      - net-tools
+      - lsof
+      - procps
+      - libjemalloc2
+      - libsnappy1v5
+      - libzstd1
+      - iproute2
+      - numactl
+      - libev4t64
+
+  cqlsh:
+    plugin: python
+    source: https://github.com/jeffwidman/cqlsh.git
+    source-tag: 6.2.0
+
+  wrapper-scripts:
+    plugin: nil
+    source: ./snap/local
+    source-type: local
+    override-build: |
+      target_cassandra_dir="${CRAFT_PART_INSTALL}/opt/cassandra/bin"
+      mkdir -p "${target_cassandra_dir}"
+
+      target_shared_dir="${CRAFT_PART_INSTALL}/opt/shared/bin"
+      mkdir -p "${target_shared_dir}"
+
+      target_cqlsh_dir="${CRAFT_PART_INSTALL}/opt/cqlsh/bin"
+      mkdir -p "${target_cqlsh_dir}"
+
+      cp -r opt/cassandra/bin/* "${target_cassandra_dir}"
+      cp -r opt/shared/bin/* "${target_shared_dir}"
+      cp -r opt/cqlsh/bin/* "${target_cqlsh_dir}"
+
+  mgmt-api:
+    plugin: nil
+    source: >-
+      https://github.com/k8ssandra/management-api-for-apache-cassandra/releases/download/v0.1.104/jars.zip
+    source-checksum: >-
+      sha256/3fd7996186b6c7d0d4a78615f3a76adf9e36962f9f30bc761dba76d0047618c2
+    build-packages:
+      - unzip
+    override-build: |
+      mkdir -p ${CRAFT_PART_INSTALL}/opt/mgmt-api/libs
+
+      AGENT_JAR=management-api-agent-5.0.x
+      SERVER_JAR=management-api-server
+
+      cp "$AGENT_JAR"/target/datastax-mgmtapi-agent-5.0.x-0.1.104.jar \
+      ${CRAFT_PART_INSTALL}/opt/mgmt-api/libs/datastax-mgmtapi-agent.jar
+
+      cp "$SERVER_JAR"/target/datastax-mgmtapi-server-0.1.104.jar \
+      ${CRAFT_PART_INSTALL}/opt/mgmt-api/libs/datastax-mgmtapi-server.jar
+
+  cassandra:
+    plugin: nil
+    build-packages:
+      - ca-certificates
+      - ca-certificates-java
+      - ssl-cert
+      - openssl
+      - openjdk-11-jre-headless
+    stage-packages:
+      - openjdk-11-jdk-headless
+    override-build: |
+      apt-get update
+      apt-get upgrade -y
+      apt-get autoremove --purge -y
+      apt-get clean -y
+      update-ca-certificates -f
+
+      trust_store="${CRAFT_PART_INSTALL}/etc/ssl/certs/java/"
+      mkdir -p "${trust_store}"
+      cp /etc/ssl/certs/java/cacerts "${trust_store}"
+
+      version="$(craftctl get version)"
+      patch="ubuntu1"
+      archive="cassandra-${version}-${patch}-linux-x64.tar.gz"
+      url="https://dlcdn.apache.org/cassandra/${version}/apache-cassandra-${version}-bin.tar.gz"
+      curl -L -o "${archive}" "${url}"
+      tar -xzvf "${archive}" -C "${CRAFT_PART_INSTALL}/" --strip-components=1
+
+      mkdir -p "${CRAFT_PART_INSTALL}/opt/cassandra"
+      mkdir -p "${CRAFT_PART_INSTALL}/etc/cassandra"
+      mv "${CRAFT_PART_INSTALL}"/conf/* "${CRAFT_PART_INSTALL}/etc/cassandra/"
+
+      declare -a resources=(bin lib tools pylib doc LICENSE.txt NOTICE.txt)
+      for res in "${resources[@]}"; do
+          mv "${CRAFT_PART_INSTALL}/${res}" \
+          "${CRAFT_PART_INSTALL}/opt/cassandra"
+
+          target="${CRAFT_PART_INSTALL}/opt/cassandra/$(basename "${res}")"
+          if [ -d "${target}" ]; then
+              chmod -R 755 "${target}"
+          elif [ -f "${target}" ]; then
+              chmod 644 "${target}"
+          fi
+      done
+
+      rm "${archive}"
+      declare -a resources=(CHANGES.txt NEWS.txt CASSANDRA-*.txt .snyk)
+      for res in "${resources[@]}"; do
+          rm -rf "${CRAFT_PART_INSTALL}/${res}"
+      done

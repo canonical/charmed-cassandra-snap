@@ -1,0 +1,26 @@
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.format]
+optional = true
+
+[tool.poetry.group.format.dependencies]
+
+[tool.poetry.group.lint]
+optional = true
+
+[tool.poetry.group.lint.dependencies]
+yamllint = "^1.37.1"
+
+[tool.poetry.group.unit]
+optional = true
+
+[tool.poetry.group.unit.dependencies]
+pytest = "^8.3.5"
+pyyaml = "^6.0.2"
+
+[tool.pytest.ini_options]
+markers = ["run"]
