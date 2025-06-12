@@ -71,7 +71,7 @@ jobs:
           version="$(yq .version < snap/snapcraft.yaml)"
           sudo snap install "charmed-cassandra_${version}_amd64.snap" --dangerous --devmode
 
-          if [ -d /var/snap/cassandra/x2 ]; then
+          if [ -d /var/snap/charmed-cassandra/x2 ]; then
               echo "Snap upgraded."
           else
               echo "Snap upgrade check failed: x2 revision directory not found."
