@@ -57,8 +57,8 @@ jobs:
 
       - name: Setup and Start Cassandra
         run: |
-          sudo snap start cassandra.daemon
-          until sudo snap run cassandra.nodetool status | grep -q "UN"; do
+          sudo snap start charmed-cassandra.daemon
+          until sudo snap run charmed-cassandra.nodetool status | grep -q "UN"; do
               echo "Waiting for Cassandra to be ready..."
               sleep 20s
           done	  
@@ -78,8 +78,8 @@ jobs:
               exit 1
           fi
 
-          sudo snap start cassandra.daemon
-          until sudo snap run cassandra.nodetool status | grep -q "UN"; do
+          sudo snap start charmed-cassandra.daemon
+          until sudo snap run charmed-cassandra.nodetool status | grep -q "UN"; do
               echo "Waiting for Cassandra to be ready..."
               sleep 20s
           done	  
@@ -89,12 +89,12 @@ jobs:
 
       - name: Setup and Start Cassandra with Management API
         run: |
-          sudo snap stop cassandra.daemon
+          sudo snap stop charmed-cassandra.daemon
       
           echo "Enabling Management API..."
           make enable-mgmtapi
       
-          sudo snap start cassandra.mgmt-server
+          sudo snap start charmed-cassandra.mgmt-server
           until curl http://localhost:8080/api/v0/metadata/endpoints | grep -q '"IS_ALIVE":"true"'; do
               echo "Waiting for Cassandra to be ready..."
               sleep 20s
