@@ -19,17 +19,21 @@ jobs:
         name: Retrieve Metadata
         run: |
           VERSION=$(yq '(.version|split("-"))[0]' snap/snapcraft.yaml)
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-
-          BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
-          echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
-          echo "risk=${BRANCH##*\/}" >> $GITHUB_OUTPUT
-          echo "track=${BRANCH%*\/*}" >> $GITHUB_OUTPUT
+          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          {
+            echo "version=${VERSION}"
+            echo "branch=${BRANCH}"
+            echo "risk=${BRANCH##*/}"
+            echo "track=${BRANCH%/*}"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Check consistency between metadata and release branch
         run: |
-          MAJOR_VERSION=$(echo ${{ steps.get-current-version.outputs.version }} | sed -n "s/\(^[0-9]*\).*/\1/p")
-          if [ "${MAJOR_VERSION}" != "${{ steps.get-current-version.outputs.track }}" ]; then exit 1; fi
+          MAJOR_VERSION=$(echo "${{ steps.get-current-version.outputs.version }}" | sed -n "s/^\([0-9]*\).*/\1/p")
+          if [ "$MAJOR_VERSION" != "${{ steps.get-current-version.outputs.track }}" ]; then
+            echo "Version mismatch: $MAJOR_VERSION != ${{ steps.get-current-version.outputs.track }}"
+            exit 1
+          fi
         continue-on-error: false
 
   build:
@@ -44,11 +48,16 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
           name: ${{ needs.build.outputs.artifact-name }}
+
       - id: get-snap-name
-        run: echo "SNAP_FILE=$(ls packed-snap-architecture-amd64/*.snap)" >> $GITHUB_OUTPUT
+        run: |
+          SNAP_FILE=$(find packed-snap-architecture-amd64 -name "*.snap" | head -n 1)
+          echo "SNAP_FILE=$SNAP_FILE" >> "$GITHUB_OUTPUT"
+
       - name: Publish snap
         id: publish
         uses: snapcore/action-publish@v1
@@ -57,6 +66,7 @@ jobs:
         with:
           snap: ${{ steps.get-snap-name.outputs.SNAP_FILE }}
           release: ${{ github.ref_name }}
+
       - name: Upload snapcraft logs
         if: ${{ failure() && steps.publish.outcome == 'failure' }}
         uses: actions/upload-artifact@v4
