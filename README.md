@@ -1,6 +1,6 @@
 # Charmed Cassandra Snap
 
-Charmed Cassandra snap includes Cassandra database and set of auxiliary tools like Cassandra Management API Server.
+Charmed Cassandra snap includes Apache Cassandra database and set of auxiliary tools like Cassandra Management API Server.
 
 This repository contains the packaging metadata for creating the Charmed Cassandra Snap. For more information on snaps, visit [snapcraft.io](https://snapcraft.io/).
 
