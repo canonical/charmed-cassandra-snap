@@ -23,7 +23,7 @@ def is_snap_installed():
 
 def cassandra_stress_available():
     try:
-        subprocess.run(["sudo", "snap", "run", "cassandra.stress", "help"], check=True)
+        subprocess.run(["sudo", "snap", "run", "charmed-cassandra.stress", "help"], check=True)
         return True
     except Exception:
         return False
@@ -31,14 +31,14 @@ def cassandra_stress_available():
 
 def test_cassandra_snap_installed():
     result = subprocess.run(
-        ["snap", "list", "cassandra"],
+        ["snap", "list", "charmed-cassandra"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
     )
 
     assert result.returncode == 0, (
-        f"'cassandra' snap is not installed.\n"
+        f"'charmed-cassandra' snap is not installed.\n"
         f"stdout: {result.stdout}\n"
         f"stderr: {result.stderr}"
     )
@@ -52,7 +52,7 @@ def test_nodetool_status():
 
     try:
         output = subprocess.check_output(
-            ['sudo', 'snap', 'run', 'cassandra.nodetool', 'status'],
+            ['sudo', 'snap', 'run', 'charmed-cassandra.nodetool', 'status'],
             text=True,
             stderr=subprocess.STDOUT
         )
@@ -78,7 +78,7 @@ def test_write_stress():
     print("▶ Starting WRITE test...")
     try:
         run_command([
-            "sudo", "snap", "run", "cassandra.stress", "write",
+            "sudo", "snap", "run", "charmed-cassandra.stress", "write",
             f"n={NUM_OPS}",
             f"cl={CL}",
             "-rate",
@@ -100,7 +100,7 @@ def test_read_stress():
     print("▶ Starting READ test...")
     try:
         run_command([
-            "sudo", "snap", "run", "cassandra.stress", "read",
+            "sudo", "snap", "run", "charmed-cassandra.stress", "read",
             f"n={NUM_OPS}",
             f"cl={CL}",
             "-rate",

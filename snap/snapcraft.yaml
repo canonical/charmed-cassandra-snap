@@ -147,6 +147,10 @@ parts:
       - iproute2
       - numactl
       - libev4t64
+    override-prime: |-
+      snapcraftctl prime
+      rm -vf usr/lib/jvm/java-11-openjdk-amd64/lib/security/cacerts
+      rm -vf usr/lib/jvm/java-11-openjdk-amd64/lib/security/blacklisted.certs
 
   cqlsh:
     plugin: python
