@@ -1,0 +1,66 @@
+name: Publish new Cassandra SNAP revision
+
+on:
+  push:
+    branches:
+      - 'latest/edge'
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  checks:
+    name: Check Metadata and branch consistency
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: get-current-version
+        name: Retrieve Metadata
+        run: |
+          VERSION=$(yq '(.version|split("-"))[0]' snap/snapcraft.yaml)
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+          BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+          echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
+          echo "risk=${BRANCH##*\/}" >> $GITHUB_OUTPUT
+          echo "track=${BRANCH%*\/*}" >> $GITHUB_OUTPUT
+
+      - name: Check consistency between metadata and release branch
+        run: |
+          MAJOR_VERSION=$(echo ${{ steps.get-current-version.outputs.version }} | sed -n "s/\(^[0-9]*\).*/\1/p")
+          if [ "${MAJOR_VERSION}" != "${{ steps.get-current-version.outputs.track }}" ]; then exit 1; fi
+        continue-on-error: false
+
+  build:
+    name: Build snap
+    needs: checks
+    uses: canonical/data-platform-workflows/.github/workflows/build_snap.yaml@v24.0.6
+
+  publish:
+    name: Publish Snap
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.artifact-name }}
+      - id: get-snap-name
+        run: echo "SNAP_FILE=$(ls packed-snap-architecture-amd64/*.snap)" >> $GITHUB_OUTPUT
+      - name: Publish snap
+        id: publish
+        uses: snapcore/action-publish@v1
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.STORE_LOGIN }}
+        with:
+          snap: ${{ steps.get-snap-name.outputs.SNAP_FILE }}
+          release: ${{ github.ref_name }}
+      - name: Upload snapcraft logs
+        if: ${{ failure() && steps.publish.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapcraft-release-logs
+          path: ~/.local/state/snapcraft/log/
+          if-no-files-found: error
