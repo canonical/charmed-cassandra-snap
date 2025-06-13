@@ -9,6 +9,7 @@ concurrency:
 on:
   push:
     branches:
+      - main
       - '*/edge'
     paths:
       - snap/**
