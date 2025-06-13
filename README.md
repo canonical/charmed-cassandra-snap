@@ -208,12 +208,9 @@ In this example, the next 3 LXC containers will be used:
 
 [Cassandra Management API from K8ssandra](https://github.com/k8ssandra/management-api-for-apache-cassandra) allows managing Cassandra node / cluster with the REST API. This tool consists of two parts:
 
-1. Management API Cassandra plugin
-
+1. Management API Cassandra plugin  
   It should be enabled by adding `JVM_OPTS="$JVM_OPTS -javaagent:/snap/charmed-cassandra/current/opt/mgmt-api/libs/datastax-mgmtapi-agent.jar"` line to `/var/snap/charmed-cassandra/current/etc/cassandra/cassandra-env.sh` file or with `make enable-mgmtapi`.
-
-2. Management API server
-
+2. Management API server  
   It manages database service and communicates with node through Management API Cassandra plugin.
 
 When Management API is enabled, Cassandra instance should be run only by starting `mgmt-server` service: `sudo snap start charmed-cassandra.mgmt-server`.
