@@ -64,7 +64,7 @@ apps:
       - hardware-observe
       - process-control
       - system-observe
-      - mount-observe # To be able to get disk space
+      - mount-observe
 
   mgmt-server:
     daemon: simple
@@ -98,9 +98,9 @@ apps:
     plugs:
       - network
       - network-bind
-      - process-control # To be able to kill cassandra process
+      - process-control
       - system-observe
-      - mount-observe # To be able to use stopdaemon
+      - mount-observe
     environment:
       bin_script: nodetool
 
