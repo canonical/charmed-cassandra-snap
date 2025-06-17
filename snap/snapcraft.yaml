@@ -43,7 +43,7 @@ hooks:
 environment:
   JAVA_HOME: ${SNAP}/usr/lib/jvm/java-11-openjdk-amd64
 
-  CASSANDRA_HOME: ${SNAP_DATA}/opt/cassandra
+  CASSANDRA_HOME: ${SNAP}/opt/cassandra
 
   CASSANDRA_CONF: ${SNAP_DATA}/etc/cassandra
 

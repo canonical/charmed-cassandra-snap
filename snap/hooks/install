@@ -26,7 +26,6 @@ function create_file_structure () {
     done
 
     copy_files_between_folder "${SNAP}/etc/cassandra/" "${CASSANDRA_CONF}/"
-    copy_files_between_folder "${SNAP}/opt/cassandra/" "${CASSANDRA_HOME}/"
 }
 
 function set_base_config_props () {
