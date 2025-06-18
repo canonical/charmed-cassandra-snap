@@ -49,7 +49,7 @@ environment:
 
   CASSANDRA_LOG_DIR: ${SNAP_COMMON}/var/log/cassandra
 
-  PATH: ${SNAP}/opt/cassandra/bin:${JAVA_HOME}/bin:$PATH
+  PATH: ${SNAP}/opt/cassandra/bin:${JAVA_HOME}/bin:${SNAP}/usr/bin:$PATH
 
 apps:
   daemon:
@@ -64,6 +64,7 @@ apps:
       - hardware-observe
       - process-control
       - system-observe
+      - mount-observe
 
   mgmt-server:
     daemon: simple
@@ -77,6 +78,7 @@ apps:
       - hardware-observe
       - process-control
       - system-observe
+      - mount-observe
     environment:
       MGMT_API_LOG_DIR: ${CASSANDRA_LOG_DIR}
       MGMT_API_DISABLE_MCAC: "true"
@@ -96,6 +98,9 @@ apps:
     plugs:
       - network
       - network-bind
+      - process-control
+      - system-observe
+      - mount-observe
     environment:
       bin_script: nodetool
 
