@@ -46,7 +46,7 @@ Initially, a single Cassandra instance will use slightly more than a half of the
 ### Single Node Deployment Example
 
 1. Start a Cassandra daemon: `sudo snap start charmed-cassandra.daemon`.
-2. After a while, you will be able to retrieve a cluster status via `charmed-cassandra.nodetool status`.
+2. After a while, you will be able to retrieve a cluster status via `sudo charmed-cassandra.nodetool status`.
 
   ```
   Datacenter: datacenter1
