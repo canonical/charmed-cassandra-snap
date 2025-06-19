@@ -204,6 +204,10 @@ In this example, the next 3 LXC containers will be used:
 
 8. Cassandra cluster is successfully deployed and accessible.
 
+### Exposing Client Interface
+
+While the `listen_address` parameter corresponds to node-to-node Cassandra connections, `rpc_address` parameter corresponds to the client connections (e.g. cqlsh) and is limited to localhost by default. Cassandra documentation warns about exposing of this interface, but for testing purposes it can be done by setting `rpc_address` to the public ip or `0.0.0.0`.
+
 ## Cassandra Management API
 
 [Cassandra Management API from K8ssandra](https://github.com/k8ssandra/management-api-for-apache-cassandra) allows managing Cassandra node / cluster with the REST API. This tool consists of two parts:
