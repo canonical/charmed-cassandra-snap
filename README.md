@@ -35,7 +35,7 @@ snapcraft pack
 sudo snap install charmed-cassandra*.snap --devmode
 ```
 
-Cassandra requires `process-control` and `system-observe` interfaces to be connected in order to be started - this can be done manually or with `make connect-interfaces`. Also, `vm.max_map_count` and `vm.swappiness` sysctl parameters can be tuned to achieve better Cassandra performance - this can be done with `make sysctl-tuning`.
+Cassandra requires `process-control`, `system-observe` and `mount-observe` interfaces to be connected in order to be started - this can be done manually or with `make connect-interfaces`. Also, `vm.max_map_count` and `vm.swappiness` sysctl parameters can be tuned to achieve better Cassandra performance - this can be done with `make sysctl-tuning`.
 
 To start Cassandra: `sudo snap start charmed-cassandra.daemon`
 
