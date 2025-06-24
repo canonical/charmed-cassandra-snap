@@ -9,13 +9,13 @@ function start_cassandra() {
   exit_if_missing_perm "process-control"
   exit_if_missing_perm "mount-observe"
 
-  echo "Starting Cassandra..."
+  echo "Starting Cassandra with management API..."
 
   "${SNAP}"/usr/bin/setpriv \
     --clear-groups \
     --reuid _daemon_ \
     --regid _daemon_ -- \
-    ${SNAP}/opt/cassandra/bin/cassandra -f
+    ${JAVA_HOME}/bin/java -jar ${MGMT_API_DIR}/libs/datastax-mgmtapi-server.jar -S /tmp/db.sock -H tcp://127.0.0.1:${MGMT_API_PORT}
 }
 
 start_cassandra

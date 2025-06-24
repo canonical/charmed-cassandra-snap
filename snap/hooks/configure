@@ -1,0 +1,53 @@
+#!/bin/sh -e
+
+# Supported keys:
+# - mem.max_heap_size_mb (integer)
+#   Port on which the snap will listen for HTTP traffic.
+
+. "${SNAP}"/opt/cassandra/bin/cassandra-utils.sh
+
+CONFIG_FILE="${CASSANDRA_CONF}/cassandra-env.sh"
+
+handle_mem_config()
+{
+	max_heap_size="$(max_heap_size_mb)"
+	heap_new_size="$(heap_new_size_mb)"
+
+        if ! echo "$max_heap_size" | grep -Eq '^[0-9]+$'; then
+            max_heap_size=""
+        fi
+    
+        if ! echo "$heap_new_size" | grep -Eq '^[0-9]+$'; then
+            heap_new_size=""
+        fi
+	
+        # === MAX_HEAP_SIZE ===
+        if [ -n "$max_heap_size" ]; then
+            max_heap_line="export MAX_HEAP_SIZE=\"${max_heap_size}M\""
+        
+            if grep -q '^export MAX_HEAP_SIZE=' "$CONFIG_FILE"; then
+                sed -i -E 's|^export MAX_HEAP_SIZE=.*|'"$max_heap_line"'|' "$CONFIG_FILE"
+            else
+                sed -i "1i$max_heap_line" "$CONFIG_FILE"
+            fi
+        else
+            sed -i '/^export MAX_HEAP_SIZE=/d' "$CONFIG_FILE"
+        fi
+        
+        # === HEAP_NEWSIZE ===
+        if [ -n "$heap_new_size" ]; then
+            new_heap_line="export HEAP_NEWSIZE=\"${heap_new_size}M\""
+        
+            if grep -q '^export HEAP_NEWSIZE=' "$CONFIG_FILE"; then
+                sed -i -E 's|^export HEAP_NEWSIZE=.*|'"$new_heap_line"'|' "$CONFIG_FILE"
+            else
+                sed -i "1i$new_heap_line" "$CONFIG_FILE"
+            fi
+        else
+            sed -i '/^export HEAP_NEWSIZE=/d' "$CONFIG_FILE"
+        fi
+
+	return 0
+}
+
+handle_mem_config
