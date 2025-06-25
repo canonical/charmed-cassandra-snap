@@ -88,7 +88,8 @@ apps:
       MGMT_API_DISABLE_MCAC: "true"
       MGMT_API_DIR: /snap/charmed-cassandra/current/opt/mgmt-api
       MGMT_API_PORT: 8080
-      JVM_EXTRA_OPTS: -javaagent:/snap/charmed-cassandra/current/opt/mgmt-api/libs/datastax-mgmtapi-agent.jar
+      JVM_EXTRA_OPTS: >-
+        -javaagent:/snap/charmed-cassandra/current/opt/mgmt-api/libs/datastax-mgmtapi-agent.jar
 
   cassandra-bin:
     command: opt/cassandra/bin/bin-wrapper.sh
