@@ -1,9 +1,5 @@
 #!/bin/sh -e
 
-# Supported keys:
-# - mem.max_heap_size_mb (integer)
-#   Port on which the snap will listen for HTTP traffic.
-
 . "${SNAP}"/opt/cassandra/bin/cassandra-utils.sh
 
 CONFIG_FILE="${CASSANDRA_CONF}/cassandra-env.sh"
@@ -46,6 +42,9 @@ handle_mem_config()
         else
             sed -i '/^export HEAP_NEWSIZE=/d' "$CONFIG_FILE"
         fi
+
+        snapctl restart charmed-cassandra.daemon
+        snapctl restart charmed-cassandra.mgmt-server
 
 	return 0
 }

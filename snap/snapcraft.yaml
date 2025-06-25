@@ -89,8 +89,6 @@ apps:
       MGMT_API_DIR: /snap/charmed-cassandra/current/opt/mgmt-api
       MGMT_API_PORT: 8080
       JVM_EXTRA_OPTS: -javaagent:/snap/charmed-cassandra/current/opt/mgmt-api/libs/datastax-mgmtapi-agent.jar
-      MAX_HEAP_SIZE: 1024M
-      HEAP_NEWSIZE: 512M
 
   cassandra-bin:
     command: opt/cassandra/bin/bin-wrapper.sh
