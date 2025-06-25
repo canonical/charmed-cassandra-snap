@@ -12,8 +12,3 @@ sysctl-tuning:
 	sudo sysctl -w vm.max_map_count=1048575
 	sudo sysctl -w vm.swappiness=0
 
-enable-mgmtapi:
-	@echo "\nEnabling Management API..."
-
-	echo "JVM_OPTS=\"\$$JVM_OPTS -javaagent:/snap/charmed-cassandra/current/opt/mgmt-api/libs/datastax-mgmtapi-agent.jar\"" \
-	| sudo tee -a /var/snap/charmed-cassandra/current/etc/cassandra/cassandra-env.sh

@@ -68,7 +68,7 @@ apps:
 
   mgmt-server:
     daemon: simple
-    command: opt/cassandra/bin/start-wrapper.sh --with-api
+    command: opt/cassandra/bin/start-wrapper-mgmt.sh
     install-mode: disable
     restart-condition: always
     restart-delay: 20s
@@ -84,6 +84,8 @@ apps:
       MGMT_API_DISABLE_MCAC: "true"
       MGMT_API_DIR: /snap/charmed-cassandra/current/opt/mgmt-api
       MGMT_API_PORT: 8080
+      JVM_EXTRA_OPTS: >-
+        -javaagent:/snap/charmed-cassandra/current/opt/mgmt-api/libs/datastax-mgmtapi-agent.jar
 
   cassandra-bin:
     command: opt/cassandra/bin/bin-wrapper.sh
