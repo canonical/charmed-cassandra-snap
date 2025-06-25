@@ -17,44 +17,18 @@ handle_mem_config()
             heap_new_size=""
         fi
 	
-        # === MAX_HEAP_SIZE ===
+        # Экспортируем в окружение
         if [ -n "$max_heap_size" ]; then
-            max_heap_line="export MAX_HEAP_SIZE=\"${max_heap_size}M\""
-        
-            if grep -q '^export MAX_HEAP_SIZE=' "$CONFIG_FILE"; then
-                sed -i -E 's|^export MAX_HEAP_SIZE=.*|'"$max_heap_line"'|' "$CONFIG_FILE"
-            else
-                sed -i "1i$max_heap_line" "$CONFIG_FILE"
-            fi
+            export MAX_HEAP_SIZE="${max_heap_size}M"
         else
-            sed -i '/^export MAX_HEAP_SIZE=/d' "$CONFIG_FILE"
+            unset MAX_HEAP_SIZE
         fi
-        
-        # === HEAP_NEWSIZE ===
+    
         if [ -n "$heap_new_size" ]; then
-            new_heap_line="export HEAP_NEWSIZE=\"${heap_new_size}M\""
-        
-            if grep -q '^export HEAP_NEWSIZE=' "$CONFIG_FILE"; then
-                sed -i -E 's|^export HEAP_NEWSIZE=.*|'"$new_heap_line"'|' "$CONFIG_FILE"
-            else
-                sed -i "1i$new_heap_line" "$CONFIG_FILE"
-            fi
+            export HEAP_NEWSIZE="${heap_new_size}M"
         else
-            sed -i '/^export HEAP_NEWSIZE=/d' "$CONFIG_FILE"
+            unset HEAP_NEWSIZE
         fi
-
-        daemon="$(detect_running_daemon)"
-        case "$daemon" in
-            "daemon")
-                echo "Restarting daemon service..."
-                snapctl restart charmed-cassandra.daemon
-                ;;
-            "mgmt-server")
-                echo "Restarting mgmt-server service..."
-                snapctl restart charmed-cassandra.mgmt-server
-                ;;
-        esac
-	
 	return 0
 }
 
