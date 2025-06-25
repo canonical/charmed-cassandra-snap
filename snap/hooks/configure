@@ -43,9 +43,18 @@ handle_mem_config()
             sed -i '/^export HEAP_NEWSIZE=/d' "$CONFIG_FILE"
         fi
 
-        snapctl restart charmed-cassandra.daemon
-        snapctl restart charmed-cassandra.mgmt-server
-
+        daemon="$(detect_running_daemon)"
+        case "$daemon" in
+            "daemon")
+                echo "Restarting daemon service..."
+                snapctl restart charmed-cassandra.daemon
+                ;;
+            "mgmt-server")
+                echo "Restarting mgmt-server service..."
+                snapctl restart charmed-cassandra.mgmt-server
+                ;;
+        esac
+	
 	return 0
 }
 
