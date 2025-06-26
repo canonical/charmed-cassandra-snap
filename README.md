@@ -41,7 +41,7 @@ To start Cassandra: `sudo snap start charmed-cassandra.daemon`
 
 ### RAM
 
-Initially, a single Cassandra instance will use slightly more than a half of the RAM available to the system. To limit the RAM usage (for example, prior running several Cassandra instances simultaneously on single machine) you can uncomment and configure `MAX_HEAP_SIZE` and `HEAP_NEWSIZE` parameters in the `/var/snap/charmed-cassandra/current/etc/cassandra/cassandra-env.sh` file. Note that `HEAP_NEWSIZE` should be the half of a size of the `MAX_HEAP_SIZE`. For basic needs `MAX_HEAP_SIZE="1024M"` & `HEAP_NEWSIZE="512M"` is sufficient.
+Initially, a single Cassandra instance will use slightly more than a half of the RAM available to the system. To limit the RAM usage (for example, prior running several Cassandra instances simultaneously on single machine) you can set `MAX_HEAP_SIZE` and `HEAP_NEWSIZE` environment variables globally in `/etc/environment` file or specifically in the `/var/snap/charmed-cassandra/current/etc/cassandra/cassandra-env.sh` file. Note that `HEAP_NEWSIZE` should be the half of a size of the `MAX_HEAP_SIZE`. Official minimal values are `MAX_HEAP_SIZE="1024M"` and `HEAP_NEWSIZE="512M"`.
 
 ### Single Node Deployment Example
 
@@ -212,12 +212,11 @@ While the `listen_address` parameter corresponds to node-to-node Cassandra conne
 
 [Cassandra Management API from K8ssandra](https://github.com/k8ssandra/management-api-for-apache-cassandra) allows managing Cassandra node / cluster with the REST API. This tool consists of two parts:
 
-1. Management API Cassandra plugin  
-  It should be enabled by adding `JVM_OPTS="$JVM_OPTS -javaagent:/snap/charmed-cassandra/current/opt/mgmt-api/libs/datastax-mgmtapi-agent.jar"` line to `/var/snap/charmed-cassandra/current/etc/cassandra/cassandra-env.sh` file or with `make enable-mgmtapi`.
+1. Management API Cassandra plugin
 2. Management API server  
   It manages database service and communicates with node through Management API Cassandra plugin.
 
-When Management API is enabled, Cassandra instance should be run only by starting `mgmt-server` service: `sudo snap start charmed-cassandra.mgmt-server`.
+When utilizing Management API, Cassandra instance should be run by starting `mgmt-server` service: `sudo snap start charmed-cassandra.mgmt-server`.
 
 ## License
 
