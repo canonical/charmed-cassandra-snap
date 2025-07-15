@@ -18,6 +18,7 @@ function create_file_structure () {
         "${CASSANDRA_DATA_DIR}"
         "${CASSANDRA_COMMIT_LOG_DIR}"
         "${CASSANDRA_SAVED_CACHES_DIR}"
+        "${CASSANDRA_CONF}/tls"
     )
     for f in "${folders[@]}"; do
         if [ ! -d "${f}" ]; then
