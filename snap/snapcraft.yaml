@@ -247,7 +247,7 @@ parts:
       mkdir -p ${CRAFT_PART_INSTALL}/opt/cassandra/lib
 
       chmod 755 jmx_prometheus_javaagent-1.0.0.jar
-      
+
       cp jmx_prometheus_javaagent-1.0.0.jar \
       ${CRAFT_PART_INSTALL}/opt/cassandra/lib/jmx_prometheus_javaagent-1.0.0.jar
 
@@ -255,4 +255,3 @@ parts:
   wrapper:
     plugin: dump
     source: snap/local
-
