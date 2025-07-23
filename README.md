@@ -218,6 +218,30 @@ While the `listen_address` parameter corresponds to node-to-node Cassandra conne
 
 When utilizing Management API, Cassandra instance should be run by starting `mgmt-server` service: `sudo snap start charmed-cassandra.mgmt-server`.
 
+## Metrics
+
+To enable **metrics** collection via the Prometheus JMX Exporter:
+
+1. Modify the `cassandra-env.sh` file by adding the following lines (adjust paths if necessary):
+
+   ```bash
+   JMX_EXPORTER_PORT=7070
+   JMX_EXPORTER_CONF="/snap/charmed-cassandra/current/etc/cassandra/jmx_exporter.yaml"
+   JMX_EXPORTER_JAR="/snap/charmed-cassandra/current/opt/cassandra/lib/jmx_prometheus_javaagent-1.0.0.jar"
+
+   JVM_OPTS="$JVM_OPTS -javaagent:${JMX_EXPORTER_JAR}=${JMX_EXPORTER_PORT}:${JMX_EXPORTER_CONF}"
+   ```
+
+2. Restart Cassandra to apply the changes.
+
+3. Verify that the metrics endpoint is working:
+
+   ```bash
+   curl http://localhost:7070/metrics
+   ```
+
+You should see a list of JVM and Cassandra metrics in Prometheus format.
+
 ## License
 
 The Apache Cassandra Snap is free software, distributed under the Apache Software License, version 2.0. See [LICENSE](https://github.com/canonical/charmed-cassandra-snap/LICENSE) for more information.
