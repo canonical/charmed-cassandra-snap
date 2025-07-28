@@ -64,77 +64,80 @@ whitelistObjectNames: [
 ]
 
 # === Metric transformation rules ===
+# Order matters - first matching rule wins, so put most specific rules first
 rules:
-  # Table-level metrics (highest priority - most specific pattern)
-  - pattern: org.apache.cassandra.metrics<type=Table, keyspace=(\S*), scope=(\S*), name=(\S*)><>(Count|Mean|95thPercentile)
+  # 1. Failure detector metrics (different package structure)
+  - pattern: "org.apache.cassandra.net<type=FailureDetector><>(DownEndpointCount)"
+    name: cassandra_net_failure_detector_down_endpoints
+
+  # 2. Table-level metrics with keyspace and scope (most specific)
+  - pattern: "org.apache.cassandra.metrics<type=Table, keyspace=([^,]*), scope=([^,]*), name=([^,]*)><>(Count|Mean|95thPercentile)"
     name: cassandra_table_$3_$4
     labels:
       keyspace: "$1"
       table: "$2"
 
-  # Client request metrics (specific for ClientRequest type)
-  - pattern: org.apache.cassandra.metrics<type=ClientRequest, scope=(\S*), name=(\S*)><>(Count|Mean|95thPercentile)
-    name: cassandra_clientrequest_$2_$3
+  # 3. Client request metrics with scope
+  - pattern: "org.apache.cassandra.metrics<type=ClientRequest, scope=([^,]*), name=([^,]*)><>(Count|Mean|95thPercentile)"
+    name: cassandra_client_request_$2_$3
     labels:
       request_type: "$1"
 
-  # Cache metrics (specific for Cache type)
-  - pattern: org.apache.cassandra.metrics<type=Cache, scope=(\S*), name=(\S*)><>(Count|Value|Mean)
+  # 4. Cache metrics with scope
+  - pattern: "org.apache.cassandra.metrics<type=Cache, scope=([^,]*), name=([^,]*)><>(Count|Value|Mean)"
     name: cassandra_cache_$2_$3
     labels:
       cache_type: "$1"
 
-  # ThreadPools metrics (specific for ThreadPools type)
-  - pattern: org.apache.cassandra.metrics<type=ThreadPools, path=(\S*), scope=(\S*), name=(\S*)><>(Count|Value)
-    name: cassandra_threadpool_$3_$4
+  # 5. ThreadPools metrics with path and scope
+  - pattern: "org.apache.cassandra.metrics<type=ThreadPools, path=([^,]*), scope=([^,]*), name=([^,]*)><>(Count|Value)"
+    name: cassandra_thread_pools_$3_$4
     labels:
-      thread_pool: "$2"
       path: "$1"
+      thread_pool: "$2"
 
-  # ThreadPools metrics without path
-  - pattern: org.apache.cassandra.metrics<type=ThreadPools, scope=(\S*), name=(\S*)><>(Count|Value)
-    name: cassandra_threadpool_$2_$3
+  # 6. ThreadPools metrics with only scope
+  - pattern: "org.apache.cassandra.metrics<type=ThreadPools, scope=([^,]*), name=([^,]*)><>(Count|Value)"
+    name: cassandra_thread_pools_$2_$3
     labels:
       thread_pool: "$1"
 
-  # DroppedMessage metrics
-  - pattern: org.apache.cassandra.metrics<type=DroppedMessage, scope=(\S*), name=(\S*)><>(Count|Value)
-    name: cassandra_droppedmessage_$2_$3
+  # 7. DroppedMessage metrics with scope
+  - pattern: "org.apache.cassandra.metrics<type=DroppedMessage, scope=([^,]*), name=([^,]*)><>(Count|Value)"
+    name: cassandra_dropped_message_$2_$3
     labels:
       message_type: "$1"
 
-  # Connection/Streaming metrics with scope (address)
-  - pattern: org.apache.cassandra.metrics<type=(Connection|Streaming), scope=(\S*), name=(\S*)><>(Count|Value)
-    name: cassandra_$1_$3_$4
+  # 8. Connection metrics with scope (address)
+  - pattern: "org.apache.cassandra.metrics<type=Connection, scope=([^,]*), name=([^,]*)><>(Count|Value)"
+    name: cassandra_connection_$2_$3
     labels:
-      address: "$2"
+      address: "$1"
 
-  # Compaction metrics (simple type without scope)
-  - pattern: org.apache.cassandra.metrics<type=Compaction, name=(\S*)><>(Count|Value)
-    name: cassandra_compaction_$1_$2
+  # 9. Streaming metrics with scope (address)
+  - pattern: "org.apache.cassandra.metrics<type=Streaming, scope=([^,]*), name=([^,]*)><>(Count|Value)"
+    name: cassandra_streaming_$2_$3
+    labels:
+      address: "$1"
 
-  # Storage metrics (simple type without scope)
-  - pattern: org.apache.cassandra.metrics<type=Storage, name=(\S*)><>(Count|Value)
-    name: cassandra_storage_$1_$2
-
-  # CQL metrics (simple type without scope)
-  - pattern: org.apache.cassandra.metrics<type=CQL, name=(\S*)><>(Count|Value)
-    name: cassandra_cql_$1_$2
-
-  # Client metrics (simple type without scope)
-  - pattern: org.apache.cassandra.metrics<type=Client, name=(\S*)><>(Count|Value)
-    name: cassandra_client_$1_$2
-
-  # Keyspace-level metrics (if any exist)
-  - pattern: org.apache.cassandra.metrics<type=Keyspace, keyspace=(\S*), name=(\S*)><>(Count|Mean|95thPercentile)
+  # 10. Keyspace-level metrics with keyspace
+  - pattern: "org.apache.cassandra.metrics<type=Keyspace, keyspace=([^,]*), name=([^,]*)><>(Count|Mean|95thPercentile)"
     name: cassandra_keyspace_$2_$3
     labels:
       keyspace: "$1"
 
-  # Failure detector metrics (different package)
-  - pattern: org.apache.cassandra.net<type=FailureDetector><>(DownEndpointCount)
-    name: cassandra_failuredetector_$1
+  # 11. Simple metrics without scope - Compaction
+  - pattern: "org.apache.cassandra.metrics<type=Compaction, name=([^,]*)><>(Count|Value)"
+    name: cassandra_compaction_$1_$2
 
-  # Catch-all rule for any remaining metrics (lowest priority)
-  - pattern: org.apache.cassandra.metrics<type=(\S*), name=(\S*)><>(Count|Value)
-    name: cassandra_$1_$2_$3
+  # 12. Simple metrics without scope - Storage
+  - pattern: "org.apache.cassandra.metrics<type=Storage, name=([^,]*)><>(Count|Value)"
+    name: cassandra_storage_$1_$2
+
+  # 13. Simple metrics without scope - CQL
+  - pattern: "org.apache.cassandra.metrics<type=CQL, name=([^,]*)><>(Count|Value)"
+    name: cassandra_cql_$1_$2
+
+  # 14. Simple metrics without scope - Client
+  - pattern: "org.apache.cassandra.metrics<type=Client, name=([^,]*)><>(Count|Value)"
+    name: cassandra_client_$1_$2
