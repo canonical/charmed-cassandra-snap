@@ -130,6 +130,14 @@ apps:
     environment:
       bin_script: cassandra-stress
 
+  jmxtool:
+    command: opt/cassandra/bin/tool-wrapper.sh
+    plugs:
+      - network
+      - network-bind
+    environment:
+      bin_script: jmxtool
+
   keytool:
     command: usr/lib/jvm/java-11-openjdk-amd64/bin/keytool
     plugs:
