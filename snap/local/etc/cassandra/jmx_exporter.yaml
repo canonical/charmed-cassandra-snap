@@ -40,16 +40,17 @@ whitelistObjectNames:
   - "org.apache.cassandra.metrics:type=ColumnFamily,*,name=BytesUnrepaired"
   
 rules:
-  # Prometheus: cassandra_client_value{name="connectedNativeClients"}
-  # Prometheus: cassandra_cache_value{scope="KeyCache", name="Size"}
+  # Rule for 'Value' attribute metrics.
+  # Maps JMX 'type' to metric name, and JMX 'scope'/'name' to Prometheus labels.
   - pattern: org.apache.cassandra.metrics<type=(\S*)(?:, scope=(\S*))?(?:, name=(\S*))?><>Value
     name: cassandra_$1_value
     type: GAUGE
     labels:
-      scope: "$2" # $2 захватывает scope, если присутствует
-      name: "$3"  # $3 захватывает name, если присутствует
+      scope: "$2" # $2 captures scope if present
+      name: "$3"  # $3 captures name if present
 
-  # Prometheus: cassandra_cache_count{scope="KeyCache", name="Requests"}
+  # Rule for 'Count' attribute metrics.
+  # Maps JMX 'type' to metric name, and JMX 'scope'/'name' to Prometheus labels.
   - pattern: org.apache.cassandra.metrics<type=(\S*)(?:, scope=(\S*))?(?:, name=(\S*))?><>Count
     name: cassandra_$1_count
     type: COUNTER
@@ -57,7 +58,8 @@ rules:
       scope: "$2"
       name: "$3"
 
-  # Prometheus: cassandra_cache_fifteen_minute_rate{scope="KeyCache", name="Requests"}
+  # Rule for 'Rate' metrics (FifteenMinuteRate, FiveMinuteRate, MeanRate, OneMinuteRate).
+  # Uses JMX 'type' and rate type in metric name, 'scope'/'name' as labels.
   - pattern: org.apache.cassandra.metrics<type=(\S*)(?:, scope=(\S*))?(?:, name=(\S*))?><>(FifteenMinuteRate|FiveMinuteRate|MeanRate|OneMinuteRate)
     name: cassandra_$1_$4
     type: GAUGE
@@ -65,7 +67,8 @@ rules:
       scope: "$2"
       name: "$3"
 
-  # Prometheus: cassandra_keyspace_total_latency_seconds_sum{name="ReadTotalLatency"}
+  # Rule for TotalLatency 'Count' metrics, treated as sum for Prometheus summary.
+  # Maps JMX 'type' and 'TotalLatency' to metric name, 'scope'/'name' as labels.
   - pattern: org.apache.cassandra.metrics<type=(\S*)(?:, scope=(\S*))?(?:, name=(.+))?><>TotalLatency><>Count
     name: cassandra_$1_total_latency_seconds_sum
     type: UNTYPED
@@ -74,7 +77,8 @@ rules:
       name: "$3"
     valueFactor: 0.000001
 
-  # Prometheus: cassandra_keyspace_latency_seconds_count{name="ReadLatency"}
+  # Rule for Latency 'Count' metrics (non-total), treated as count for Prometheus summary.
+  # Maps JMX 'type' and 'Latency' to metric name, 'scope'/'name' as labels.
   - pattern: org.apache.cassandra.metrics<type=(\S*)(?:, scope=(\S*))?(?:, name=(.+))?><>Latency><>Count
     name: cassandra_$1_latency_seconds_count
     type: UNTYPED
@@ -82,7 +86,8 @@ rules:
       scope: "$2"
       name: "$3"
 
-  # Prometheus: cassandra_keyspace_latency_seconds{name="ReadLatency", quantile="0.99"}
+  # Rule for Latency Percentile metrics.
+  # Maps JMX 'type' and 'Latency' to metric name, 'scope'/'name' and 'quantile' as labels.
   - pattern: org.apache.cassandra.metrics<type=(\S*)(?:, scope=(\S*))?(?:, name=(.+))?><>Latency><>(\d+)thPercentile
     name: cassandra_$1_latency_seconds
     type: GAUGE
@@ -92,7 +97,8 @@ rules:
       quantile: "0.$4"
     valueFactor: 0.000001
 
-  # Prometheus: cassandra_somemetric_percentile{name="AnotherName", quantile="0.50"}
+  # Rule for generic Percentile metrics.
+  # Maps JMX 'type' to metric name, 'scope'/'name' and 'quantile' as labels.
   - pattern: org.apache.cassandra.metrics<type=(\S*)(?:, scope=(\S*))?(?:, name=(.+))?><>(\d+)thPercentile
     name: cassandra_$1_percentile
     type: GAUGE
