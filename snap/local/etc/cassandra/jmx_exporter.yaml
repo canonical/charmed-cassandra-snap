@@ -40,55 +40,63 @@ whitelistObjectNames:
   - "org.apache.cassandra.metrics:type=ColumnFamily,*,name=BytesUnrepaired"
   
 rules:
-# Generic gauges with 0-2 labels
-- pattern: org.apache.cassandra.metrics<type=(\S*)(?:, ((?!scope)\S*)=(\S*))?(?:, scope=(\S*))?, name=(\S*)><>Value
-  name: cassandra_$1_$5
-  type: GAUGE
-  labels:
-    "$1": "$4"
-    "$2": "$3"
+  # Prometheus: cassandra_client_value{name="connectedNativeClients"}
+  # Prometheus: cassandra_cache_value{scope="KeyCache", name="Size"}
+  - pattern: org.apache.cassandra.metrics<type=(\S*)(?:, scope=(\S*))?(?:, name=(\S*))?><>Value
+    name: cassandra_$1_value
+    type: GAUGE
+    labels:
+      scope: "$2" # $2 захватывает scope, если присутствует
+      name: "$3"  # $3 захватывает name, если присутствует
 
-#
-# Emulate Prometheus 'Summary' metrics for the exported 'Histogram's.
-# TotalLatency is the sum of all latencies since server start
-#
-- pattern: org.apache.cassandra.metrics<type=(\S*)(?:, ((?!scope)\S*)=(\S*))?(?:, scope=(\S*))?, name=(.+)?(?:Total)(Latency)><>Count
-  name: cassandra_$1_$5$6_seconds_sum
-  type: UNTYPED
-  labels:
-    "$1": "$4"
-    "$2": "$3"
-  # Convert microseconds to seconds
-  valueFactor: 0.000001
+  # Prometheus: cassandra_cache_count{scope="KeyCache", name="Requests"}
+  - pattern: org.apache.cassandra.metrics<type=(\S*)(?:, scope=(\S*))?(?:, name=(\S*))?><>Count
+    name: cassandra_$1_count
+    type: COUNTER
+    labels:
+      scope: "$2"
+      name: "$3"
 
-- pattern: org.apache.cassandra.metrics<type=(\S*)(?:, ((?!scope)\S*)=(\S*))?(?:, scope=(\S*))?, name=((?:.+)?(?:Latency))><>Count
-  name: cassandra_$1_$5_seconds_count
-  type: UNTYPED
-  labels:
-    "$1": "$4"
-    "$2": "$3"
+  # Prometheus: cassandra_cache_fifteen_minute_rate{scope="KeyCache", name="Requests"}
+  - pattern: org.apache.cassandra.metrics<type=(\S*)(?:, scope=(\S*))?(?:, name=(\S*))?><>(FifteenMinuteRate|FiveMinuteRate|MeanRate|OneMinuteRate)
+    name: cassandra_$1_$4
+    type: GAUGE
+    labels:
+      scope: "$2"
+      name: "$3"
 
-- pattern: org.apache.cassandra.metrics<type=(\S*)(?:, ((?!scope)\S*)=(\S*))?(?:, scope=(\S*))?, name=(.+)><>Count
-  name: cassandra_$1_$5_count
-  type: UNTYPED
-  labels:
-    "$1": "$4"
-    "$2": "$3"
+  # Prometheus: cassandra_keyspace_total_latency_seconds_sum{name="ReadTotalLatency"}
+  - pattern: org.apache.cassandra.metrics<type=(\S*)(?:, scope=(\S*))?(?:, name=(.+))?><>TotalLatency><>Count
+    name: cassandra_$1_total_latency_seconds_sum
+    type: UNTYPED
+    labels:
+      scope: "$2"
+      name: "$3"
+    valueFactor: 0.000001
 
-- pattern: org.apache.cassandra.metrics<type=(\S*)(?:, ((?!scope)\S*)=(\S*))?(?:, scope=(\S*))?, name=((?:.+)?(?:Latency))><>(\d+)thPercentile
-  name: cassandra_$1_$5_seconds
-  type: GAUGE
-  labels:
-    "$1": "$4"
-    "$2": "$3"
-    quantile: "0.$6"
-  # Convert microseconds to seconds
-  valueFactor: 0.000001
+  # Prometheus: cassandra_keyspace_latency_seconds_count{name="ReadLatency"}
+  - pattern: org.apache.cassandra.metrics<type=(\S*)(?:, scope=(\S*))?(?:, name=(.+))?><>Latency><>Count
+    name: cassandra_$1_latency_seconds_count
+    type: UNTYPED
+    labels:
+      scope: "$2"
+      name: "$3"
 
-- pattern: org.apache.cassandra.metrics<type=(\S*)(?:, ((?!scope)\S*)=(\S*))?(?:, scope=(\S*))?, name=(.+)><>(\d+)thPercentile
-  name: cassandra_$1_$5
-  type: GAUGE
-  labels:
-    "$1": "$4"
-    "$2": "$3"
-    quantile: "0.$6"
+  # Prometheus: cassandra_keyspace_latency_seconds{name="ReadLatency", quantile="0.99"}
+  - pattern: org.apache.cassandra.metrics<type=(\S*)(?:, scope=(\S*))?(?:, name=(.+))?><>Latency><>(\d+)thPercentile
+    name: cassandra_$1_latency_seconds
+    type: GAUGE
+    labels:
+      scope: "$2"
+      name: "$3"
+      quantile: "0.$4"
+    valueFactor: 0.000001
+
+  # Prometheus: cassandra_somemetric_percentile{name="AnotherName", quantile="0.50"}
+  - pattern: org.apache.cassandra.metrics<type=(\S*)(?:, scope=(\S*))?(?:, name=(.+))?><>(\d+)thPercentile
+    name: cassandra_$1_percentile
+    type: GAUGE
+    labels:
+      scope: "$2"
+      name: "$3"
+      quantile: "0.$4"
