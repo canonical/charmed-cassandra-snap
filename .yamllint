@@ -1,0 +1,4 @@
+extends: default
+
+ignore: |
+  /snap/local/etc/cassandra/*.yaml
