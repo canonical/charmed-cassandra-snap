@@ -66,12 +66,6 @@ whitelistObjectNames: [
 
 "org.apache.cassandra.metrics:name=WriteLatency,type=Table,*",
 "org.apache.cassandra.metrics:name=ReadLatency,type=Table,*",
-
-#"org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=HitRate,*",
-#"org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Hits,*",
-#"org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Requests,*",
-#"org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Entries,*",
-#"org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Size,*",
 ]
 rules:
   - pattern: org.apache.cassandra.metrics<type=(Connection)(?:, ((?!scope)\S*)=(\S*))?(?:, scope=(\S*))?, name=(\S*)><>(Count|Value|MeanRate|FiveMinuteRate)
