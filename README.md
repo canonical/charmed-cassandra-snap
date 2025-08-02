@@ -229,7 +229,7 @@ To enable **metrics** collection via the Prometheus JMX Exporter:
    JMX_EXPORTER_CONF="/snap/charmed-cassandra/current/etc/cassandra/jmx_exporter.yaml"
    JMX_EXPORTER_JAR="/snap/charmed-cassandra/current/opt/cassandra/lib/jmx_prometheus_javaagent-1.0.0.jar"
 
-   JVM_OPTS="$JVM_OPTS -javaagent:${JMX_EXPORTER_JAR}=${JMX_EXPORTER_PORT}:${JMX_EXPORTER_CONF}"
+   JVM_EXTRA_OPTS="$JVM_EXTRA_OPTS -javaagent:${JMX_EXPORTER_JAR}=${JMX_EXPORTER_PORT}:${JMX_EXPORTER_CONF}"
    ```
 
 2. Restart Cassandra to apply the changes.
