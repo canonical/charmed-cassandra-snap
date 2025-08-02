@@ -1,0 +1,117 @@
+lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+whitelistObjectNames: [
+"org.apache.cassandra.metrics:name=Timeouts,*",
+"org.apache.cassandra.metrics:name=TotalTimeouts,type=Connection,*",
+"org.apache.cassandra.metrics:name=Dropped,type=DroppedMessage,*",
+"org.apache.cassandra.net:type=FailureDetector,*",
+
+"org.apache.cassandra.metrics:name=RegularStatementsExecuted,type=CQL,*",
+"org.apache.cassandra.metrics:name=PreparedStatementsExecuted,type=CQL,*",
+
+"org.apache.cassandra.metrics:name=RangeLatency,type=ColumnFamily,*",
+"org.apache.cassandra.metrics:name=LiveDiskSpaceUsed,type=ColumnFamily,*",
+"org.apache.cassandra.metrics:name=LiveSSTableCount,type=ColumnFamily,*",
+"org.apache.cassandra.metrics:name=SSTablesPerReadHistogram,type=ColumnFamily,*",
+"org.apache.cassandra.metrics:name=SpeculativeRetries,type=ColumnFamily,*",
+"org.apache.cassandra.metrics:name=MemtableOnHeapSize,type=ColumnFamily,*",
+"org.apache.cassandra.metrics:name=MemtableSwitchCount,type=ColumnFamily,*",
+"org.apache.cassandra.metrics:name=MemtableLiveDataSize,type=ColumnFamily,*",
+"org.apache.cassandra.metrics:name=MemtableColumnsCount,type=ColumnFamily,*",
+"org.apache.cassandra.metrics:name=MemtableOffHeapSize,type=ColumnFamily,*",
+"org.apache.cassandra.metrics:name=BloomFilterFalsePositives,type=ColumnFamily,*",
+"org.apache.cassandra.metrics:name=BloomFilterFalseRatio,type=ColumnFamily,*",
+"org.apache.cassandra.metrics:name=BloomFilterDiskSpaceUsed,type=ColumnFamily,*",
+"org.apache.cassandra.metrics:name=BloomFilterOffHeapMemoryUsed,type=ColumnFamily,*",
+"org.apache.cassandra.metrics:name=SnapshotsSize,type=ColumnFamily,*",
+"org.apache.cassandra.metrics:name=TotalDiskSpaceUsed,type=ColumnFamily,*",
+
+"org.apache.cassandra.metrics:name=RangeLatency,type=Keyspace,*",
+"org.apache.cassandra.metrics:name=SSTablesPerReadHistogram,type=Keyspace,*",
+"org.apache.cassandra.metrics:name=SpeculativeRetries,type=Keyspace,*",
+"org.apache.cassandra.metrics:name=MemtableSwitchCount,type=Keyspace,*",
+"org.apache.cassandra.metrics:name=MemtableLiveDataSize,type=Keyspace,*",
+"org.apache.cassandra.metrics:name=MemtableColumnsCount,type=Keyspace,*",
+"org.apache.cassandra.metrics:name=BloomFilterFalsePositives,type=Keyspace,*",
+"org.apache.cassandra.metrics:name=BloomFilterFalseRatio,type=Keyspace,*",
+"org.apache.cassandra.metrics:name=BloomFilterDiskSpaceUsed,type=Keyspace,*",
+"org.apache.cassandra.metrics:name=BloomFilterOffHeapMemoryUsed,type=Keyspace,*",
+"org.apache.cassandra.metrics:name=TotalDiskSpaceUsed,type=Keyspace,*",
+
+
+"org.apache.cassandra.metrics:name=PendingTasks,type=Compaction,*",
+"org.apache.cassandra.metrics:name=CompletedTasks,type=Compaction,*",
+"org.apache.cassandra.metrics:name=BytesCompacted,type=Compaction,*",
+"org.apache.cassandra.metrics:name=TotalCompactionsCompleted,type=Compaction,*",
+
+"org.apache.cassandra.metrics:name=Latency,type=ClientRequest,*",
+"org.apache.cassandra.metrics:name=Unavailables,type=ClientRequest,*",
+"org.apache.cassandra.metrics:name=Timeouts,type=ClientRequest,*",
+
+"org.apache.cassandra.metrics:name=Exceptions,type=Storage,*",
+"org.apache.cassandra.metrics:name=TotalHints,type=Storage,*",
+"org.apache.cassandra.metrics:name=TotalHintsInProgress,type=Storage,*",
+"org.apache.cassandra.metrics:name=Load,type=Storage,*",
+
+
+"org.apache.cassandra.metrics:name=CompletedTasks,type=ThreadPools,*",
+"org.apache.cassandra.metrics:name=PendingTasks,type=ThreadPools,*",
+"org.apache.cassandra.metrics:name=ActiveTasks,type=ThreadPools,*",
+"org.apache.cassandra.metrics:name=TotalBlockedTasks,type=ThreadPools,*",
+"org.apache.cassandra.metrics:name=CurrentlyBlockedTasks,type=ThreadPools,*",
+
+
+"org.apache.cassandra.metrics:name=connectedNativeClients,type=Client,*",
+"org.apache.cassandra.metrics:name=connectedThriftClients,type=Client,*",
+
+"org.apache.cassandra.metrics:name=WriteLatency,type=Table,*",
+"org.apache.cassandra.metrics:name=ReadLatency,type=Table,*",
+]
+rules:
+  - pattern: org.apache.cassandra.metrics<type=(Connection)(?:, ((?!scope)\S*)=(\S*))?(?:, scope=(\S*))?, name=(\S*)><>(Count|Value|MeanRate|FiveMinuteRate)
+    name: cassandra_$1_$5_$6
+    labels:
+      "$1": "$4"
+      "$2": "$3"
+      
+  - pattern: org.apache.cassandra.net<type=(FailureDetector)><>(DownEndpointCount)
+    name: cassandra_$1_$2
+    
+  - pattern: 'org.apache.cassandra.metrics<type=(ColumnFamily), name=(RangeLatency)><>(Count|Mean|95thPercentile): (.+)'
+    name: cassandra_$1_$2_$3
+    labels:
+      type: "$1"
+      name: "$2"
+    type: GAUGE
+
+  - pattern: 'org.apache.cassandra.metrics<type=(ColumnFamily), keyspace=(\S*), scope=(\S*), name=(LiveDiskSpaceUsed)><>(Count|Value|Mean): (.+)'
+    name: cassandra_table_live_disk_space_used_bytes_$5
+    labels:
+      keyspace: "$2"
+      table: "$3"
+    type: GAUGE
+
+  - pattern: 'org.apache.cassandra.metrics<type=(Keyspace), keyspace=(\S*), name=(\S*)><>(Count|Mean|95thPercentile): (.+)'
+    name: cassandra_$1_$2_$3_$4
+    labels:
+      "$1": "$2"
+    type: GAUGE
+
+  - pattern: 'org.apache.cassandra.metrics<type=(Table), keyspace=(\S*), scope=(\S*), name=(\S*)><>(Count|Mean|95thPercentile): (.+)'
+    name: cassandra_$1_$4_$5
+    labels:
+      "keyspace": "$2"
+      "table": "$3"
+
+  - pattern: 'org.apache.cassandra.metrics<type=(ClientRequest), scope=(\S*), name=(\S*)><>(Count|Mean|95thPercentile): (.+)'
+    name: cassandra_$1_$3_$4
+    labels:
+      "type": "$2"
+
+  - pattern: org.apache.cassandra.metrics<type=(\S*)(?:, ((?!scope)\S*)=(\S*))?(?:, scope=(\S*))?,
+      name=(\S*)><>(Count|Value)
+    name: cassandra_$1_$5
+    labels:
+      "$1": "$4"
+      "$2": "$3"
+

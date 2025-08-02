@@ -130,6 +130,14 @@ apps:
     environment:
       bin_script: cassandra-stress
 
+  jmxtool:
+    command: opt/cassandra/bin/tool-wrapper.sh
+    plugs:
+      - network
+      - network-bind
+    environment:
+      bin_script: jmxtool
+
   keytool:
     command: usr/lib/jvm/java-11-openjdk-amd64/bin/keytool
     plugs:
@@ -163,24 +171,6 @@ parts:
     plugin: python
     source: https://github.com/jeffwidman/cqlsh.git
     source-tag: 6.2.0
-
-  wrapper-scripts:
-    plugin: nil
-    source: ./snap/local
-    source-type: local
-    override-build: |
-      target_cassandra_dir="${CRAFT_PART_INSTALL}/opt/cassandra/bin"
-      mkdir -p "${target_cassandra_dir}"
-
-      target_shared_dir="${CRAFT_PART_INSTALL}/opt/shared/bin"
-      mkdir -p "${target_shared_dir}"
-
-      target_cqlsh_dir="${CRAFT_PART_INSTALL}/opt/cqlsh/bin"
-      mkdir -p "${target_cqlsh_dir}"
-
-      cp -r opt/cassandra/bin/* "${target_cassandra_dir}"
-      cp -r opt/shared/bin/* "${target_shared_dir}"
-      cp -r opt/cqlsh/bin/* "${target_cqlsh_dir}"
 
   mgmt-api:
     plugin: nil
@@ -252,3 +242,24 @@ parts:
       for res in "${resources[@]}"; do
           rm -rf "${CRAFT_PART_INSTALL}/${res}"
       done
+
+  jmx-exporter:
+    plugin: nil
+    after: [cassandra]
+    source: >-
+      https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.0/jmx_prometheus_javaagent-1.0.0.jar
+    source-checksum: >-
+      sha256/b51be555fa1deb59b414220572c8acd31c096c20d1c38e4468293e63d47206e3
+    source-type: file
+    override-build: |
+      mkdir -p ${CRAFT_PART_INSTALL}/opt/cassandra/lib
+
+      chmod 755 jmx_prometheus_javaagent-1.0.0.jar
+
+      cp jmx_prometheus_javaagent-1.0.0.jar \
+      ${CRAFT_PART_INSTALL}/opt/cassandra/lib/jmx_prometheus_javaagent-1.0.0.jar
+
+
+  wrapper:
+    plugin: dump
+    source: snap/local
