@@ -1,7 +1,7 @@
 name: charmed-cassandra
 base: core24
 
-version: 5.0.4
+version: 5.0.5
 
 summary: Snap for Apache Cassandra – a distributed NoSQL database
 description: |
@@ -247,17 +247,17 @@ parts:
     plugin: nil
     after: [cassandra]
     source: >-
-      https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.0/jmx_prometheus_javaagent-1.0.0.jar
+      https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar
     source-checksum: >-
-      sha256/b51be555fa1deb59b414220572c8acd31c096c20d1c38e4468293e63d47206e3
+      sha256/7d61f737fd661610ccc14aea79764faa1ea94a340cbc8f0029b3d2edea3d80c1
     source-type: file
     override-build: |
       mkdir -p ${CRAFT_PART_INSTALL}/opt/cassandra/lib
 
-      chmod 755 jmx_prometheus_javaagent-1.0.0.jar
+      chmod 755 jmx_prometheus_javaagent-1.0.1.jar
 
-      cp jmx_prometheus_javaagent-1.0.0.jar \
-      ${CRAFT_PART_INSTALL}/opt/cassandra/lib/jmx_prometheus_javaagent-1.0.0.jar
+      cp jmx_prometheus_javaagent-1.0.1.jar \
+      ${CRAFT_PART_INSTALL}/opt/cassandra/lib/jmx_prometheus_javaagent-1.0.1.jar
 
 
   wrapper:
