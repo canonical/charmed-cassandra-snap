@@ -169,8 +169,9 @@ parts:
 
   cqlsh:
     plugin: python
-    source: https://github.com/jeffwidman/cqlsh.git
-    source-tag: 6.2.0
+    source: .
+    python-packages:
+      - cqlsh
 
   mgmt-api:
     plugin: nil
