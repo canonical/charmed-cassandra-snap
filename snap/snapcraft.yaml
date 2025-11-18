@@ -1,7 +1,7 @@
 name: charmed-cassandra
 base: core24
 
-version: 5.0.5
+version: 5.0.6
 
 summary: Snap for Apache Cassandra – a distributed NoSQL database
 description: |
