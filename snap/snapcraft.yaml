@@ -128,7 +128,7 @@ apps:
     environment:
       jar: nb5.jar
       java: java-17-openjdk-amd64
-    
+
   jmxtool:
     command: opt/cassandra/bin/tool-wrapper.sh
     plugs:
@@ -243,7 +243,7 @@ parts:
       for res in "${resources[@]}"; do
           rm -rf "${CRAFT_PART_INSTALL}/${res}"
       done
-      
+
   jmx-exporter:
     plugin: nil
     after: [cassandra]
@@ -259,14 +259,14 @@ parts:
 
       cp jmx_prometheus_javaagent-1.0.1.jar \
       ${CRAFT_PART_INSTALL}/opt/cassandra/lib/jmx_prometheus_javaagent-1.0.1.jar
-      
+
   wrapper:
     plugin: dump
     source: snap/local
 
   nosqlbench:
     plugin: nil
-    after: [cassandra]    
+    after: [cassandra]
     source: >-
       https://github.com/nosqlbench/nosqlbench/releases/download/5.17.3-release/nb5.jar
     source-checksum: >-
@@ -275,4 +275,3 @@ parts:
     override-build: |
       mkdir -p ${CRAFT_PART_INSTALL}/opt/nosqlbench/bin
       cp nb5.jar ${CRAFT_PART_INSTALL}/opt/nosqlbench/bin/nb5.jar
-
