@@ -2,10 +2,6 @@ import subprocess
 import yaml
 import pytest
 
-NUM_OPS = 100
-THREADS = 2
-CL = "ONE"
-
 def run_command(cmd):
     result = subprocess.run(cmd, shell=False, text=True, capture_output=True)
     if result.returncode != 0:
@@ -68,44 +64,40 @@ def test_nodetool_status():
         
 
 @pytest.mark.run(after="test_nodetool_status")
-def test_write_stress():
+def test_nosqlbench_basic_check():
     if not is_snap_installed():
         pytest.fail("[FAILED] snap command not found")
 
-    if not cassandra_stress_available():
-        pytest.fail("[FAILED] cassandra-stress is not installed or not available via snap")
+    print("▶ Starting NoSQLBench basic_check...")
 
-    print("▶ Starting WRITE test...")
+    cmd = [
+        "sudo",
+        "snap",
+        "run",
+        "charmed-cassandra.nosqlbench",
+        "/activities/baselines/cql-keyvalue.yaml",
+        "basic_check",
+        "host=127.0.0.1",
+        "port=9042",
+        "localdc=datacenter1",
+        "keyspace=nb5_test",
+        "driver=cql",
+        "-v",
+    ]
+
+    output = ""
+
     try:
-        run_command([
-            "sudo", "snap", "run", "charmed-cassandra.stress", "write",
-            f"n={NUM_OPS}",
-            f"cl={CL}",
-            "-rate",
-            f"threads={THREADS}"
-        ])
+        output = run_command(cmd)
     except subprocess.CalledProcessError:
-        pytest.fail("[FAILED] WRITE test failed")
-    print("[SUCCESS] WRITE test completed")
+        pytest.fail("[FAILED] NoSQLBench basic_check failed")
 
-@pytest.mark.run(after="test_nodetool_status")
-def test_read_stress():
-    if not is_snap_installed():
-        pytest.fail("[FAILED] snap command not found")
+    print(f"NoSQLBench result: \n{output}")
 
-    if not cassandra_stress_available():
-        pytest.fail("[FAILED] cassandra-stress is not installed or not available via snap")
+    if "Scenario completed successfully" not in output:
+        pytest.fail(
+            "[FAILED] NoSQLBench did not complete successfully "
+            "(missing 'Scenario completed successfully')"
+        )
 
-    
-    print("▶ Starting READ test...")
-    try:
-        run_command([
-            "sudo", "snap", "run", "charmed-cassandra.stress", "read",
-            f"n={NUM_OPS}",
-            f"cl={CL}",
-            "-rate",
-            f"threads={THREADS}"
-        ])
-    except subprocess.CalledProcessError:
-        pytest.fail("[FAILED] READ test failed")
-    print("[SUCCESS] READ test completed")
+    print("[SUCCESS] NoSQLBench basic_check completed successfully")
