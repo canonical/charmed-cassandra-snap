@@ -242,6 +242,32 @@ To enable **metrics** collection via the Prometheus JMX Exporter:
 
 You should see a list of JVM and Cassandra metrics in Prometheus format.
 
+## Benchmark
+
+To evaluate Cassandra performance, you can use **NoSQLBench**, which is included in the Charmed Cassandra snap.
+
+1. Run a baseline benchmark using the provided NoSQLBench activity file:
+
+   ```bash
+   sudo charmed-cassandra.nosqlbench /activities/baselines/cql-keyvalue.yaml \
+       host=127.0.0.1 \
+       port=9042 \
+       localdc=datacenter1 \
+       keyspace=nb5_test \
+       driver=cql -v
+   ```
+
+   * `host`: Cassandra node address
+   * `port`: Cassandra CQL port (`9042` by default)
+   * `localdc`: Local datacenter name (`datacenter1` by default)
+   * `keyspace`: Keyspace to run the benchmark on
+   * `driver`: Protocol driver
+   * `-v`: Verbose output
+
+2. You should see detailed summary about read/write operations, latency, and throughput in stdout.
+
+3. After benchmarking, you can analyze results to tune Cassandra performance (e.g., heap size, compaction strategy, replication factor).
+
 ## License
 
 The Apache Cassandra Snap is free software, distributed under the Apache Software License, version 2.0. See [LICENSE](https://github.com/canonical/charmed-cassandra-snap/LICENSE) for more information.

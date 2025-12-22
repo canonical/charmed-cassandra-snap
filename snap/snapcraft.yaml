@@ -120,13 +120,14 @@ apps:
     environment:
       bin: cqlsh
 
-  stress:
-    command: opt/cassandra/bin/tool-wrapper.sh
+  nosqlbench:
+    command: opt/nosqlbench/bin/java-wrapper.sh
     plugs:
       - network
       - network-bind
     environment:
-      bin_script: cassandra-stress
+      jar: nb5.jar
+      java: java-17-openjdk-amd64
 
   jmxtool:
     command: opt/cassandra/bin/tool-wrapper.sh
@@ -149,6 +150,7 @@ parts:
     stage-packages:
       - util-linux
       - openjdk-11-jre-headless
+      - openjdk-17-jdk-headless
       - python3
       - curl
       - net-tools
@@ -261,3 +263,15 @@ parts:
   wrapper:
     plugin: dump
     source: snap/local
+
+  nosqlbench:
+    plugin: nil
+    after: [cassandra]
+    source: >-
+      https://github.com/nosqlbench/nosqlbench/releases/download/5.17.3-release/nb5.jar
+    source-checksum: >-
+      sha256/54aed15049f0092a085c79beefa0f6567316af411d4d628e504888e0013f436a
+    source-type: file
+    override-build: |
+      mkdir -p ${CRAFT_PART_INSTALL}/opt/nosqlbench/bin
+      cp nb5.jar ${CRAFT_PART_INSTALL}/opt/nosqlbench/bin/nb5.jar
