@@ -39,16 +39,14 @@ hooks:
       CASSANDRA_DATA_DIR: ${SNAP_COMMON}/var/lib/cassandra/data
       CASSANDRA_COMMIT_LOG_DIR: ${SNAP_COMMON}/var/lib/cassandra/commitlog
       CASSANDRA_SAVED_CACHES_DIR: ${SNAP_COMMON}/var/lib/cassandra/saved_caches
+      CASSANDRA_CDC_DIR: ${SNAP_COMMON}/var/lib/cassandra/cdc_raw
 
 environment:
-  JAVA_HOME: ${SNAP}/usr/lib/jvm/java-11-openjdk-amd64
-
+  JAVA_HOME: ${SNAP}/usr/lib/jvm/java-17-openjdk-amd64
   CASSANDRA_HOME: ${SNAP}/opt/cassandra
-
   CASSANDRA_CONF: ${SNAP_DATA}/etc/cassandra
-
   CASSANDRA_LOG_DIR: ${SNAP_COMMON}/var/log/cassandra
-
+  CASSANDRA_DEBEZIUM_PLUGIN_DIR: ${CASSANDRA_HOME}/lib/debezium
   PATH: ${SNAP}/opt/cassandra/bin:${JAVA_HOME}/bin:${SNAP}/usr/bin:$PATH
 
 apps:
@@ -137,7 +135,7 @@ apps:
       bin_script: jmxtool
 
   keytool:
-    command: usr/lib/jvm/java-11-openjdk-amd64/bin/keytool
+    command: usr/lib/jvm/java-17-openjdk-amd64/bin/keytool
     plugs:
       - mount-observe
 
@@ -148,7 +146,7 @@ parts:
       - yq
     stage-packages:
       - util-linux
-      - openjdk-11-jre-headless
+      - openjdk-17-jre-headless
       - python3
       - curl
       - net-tools
@@ -162,8 +160,8 @@ parts:
       - libev4t64
     override-prime: |-
       snapcraftctl prime
-      rm -vf usr/lib/jvm/java-11-openjdk-amd64/lib/security/cacerts
-      rm -vf usr/lib/jvm/java-11-openjdk-amd64/lib/security/blacklisted.certs
+      rm -vf usr/lib/jvm/java-17-openjdk-amd64/lib/security/cacerts
+      rm -vf usr/lib/jvm/java-17-openjdk-amd64/lib/security/blacklisted.certs
 
   cqlsh:
     plugin: python
@@ -198,9 +196,9 @@ parts:
       - ca-certificates-java
       - ssl-cert
       - openssl
-      - openjdk-11-jre-headless
+      - openjdk-17-jre-headless
     stage-packages:
-      - openjdk-11-jdk-headless
+      - openjdk-17-jdk-headless
     override-build: |
       apt-get update
       apt-get upgrade -y
@@ -258,6 +256,22 @@ parts:
       cp jmx_prometheus_javaagent-1.0.1.jar \
       ${CRAFT_PART_INSTALL}/opt/cassandra/lib/jmx_prometheus_javaagent-1.0.1.jar
 
+  debezium-integrator:
+    plugin: nil
+    after: [cassandra]
+    source:
+      https://repo1.maven.org/maven2/io/debezium/debezium-connector-cassandra-5/3.4.1.Final/debezium-connector-cassandra-5-3.4.1.Final-plugin.tar.gz
+    source-type: file
+    override-build: |
+      mkdir -p ${CRAFT_PART_INSTALL}/opt/cassandra/lib/debezium
+      tar -xzvf debezium-connector-cassandra-5-3.4.1.Final-plugin.tar.gz -C ${CRAFT_PART_INSTALL}/opt/cassandra/lib/debezium --strip-components=1
+
+      # Add extra dependencies needed that are not included in the java version
+      curl -L -o ${CRAFT_PART_INSTALL}/opt/cassandra/lib/debezium/jackson-databind-2.19.0.jar https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.19.0/jackson-databind-2.19.0.jar
+      curl -L -o ${CRAFT_PART_INSTALL}/opt/cassandra/lib/debezium/jackson-core-2.19.0.jar https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.19.0/jackson-core-2.19.0.jar
+      curl -L -o ${CRAFT_PART_INSTALL}/opt/cassandra/lib/debezium/jackson-annotations-2.19.0.jar https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.19.0/jackson-annotations-2.19.0.jar
+
+      chmod -R 755 ${CRAFT_PART_INSTALL}/opt/cassandra/lib/debezium
   wrapper:
     plugin: dump
     source: snap/local
