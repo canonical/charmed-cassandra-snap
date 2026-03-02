@@ -46,7 +46,7 @@ environment:
   CASSANDRA_HOME: ${SNAP}/opt/cassandra
   CASSANDRA_CONF: ${SNAP_DATA}/etc/cassandra
   CASSANDRA_LOG_DIR: ${SNAP_COMMON}/var/log/cassandra
-  CASSANDRA_DEBEZIUM_PLUGIN_DIR: ${CASSANDRA_HOME}/lib/debezium
+  CASSANDRA_DEBEZIUM_DIR: ${CASSANDRA_HOME}/lib/debezium
   PATH: ${SNAP}/opt/cassandra/bin:${JAVA_HOME}/bin:${SNAP}/usr/bin:$PATH
 
 apps:
@@ -264,12 +264,20 @@ parts:
     source-type: file
     override-build: |
       mkdir -p ${CRAFT_PART_INSTALL}/opt/cassandra/lib/debezium
-      tar -xzvf debezium-connector-cassandra-5-3.4.1.Final-plugin.tar.gz -C ${CRAFT_PART_INSTALL}/opt/cassandra/lib/debezium --strip-components=1
+      tar -xzvf debezium-connector-cassandra-5-3.4.1.Final-plugin.tar.gz \
+        -C ${CRAFT_PART_INSTALL}/opt/cassandra/lib/debezium --strip-components=1
 
-      # Add extra dependencies needed that are not included in the java version
-      curl -L -o ${CRAFT_PART_INSTALL}/opt/cassandra/lib/debezium/jackson-databind-2.19.0.jar https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.19.0/jackson-databind-2.19.0.jar
-      curl -L -o ${CRAFT_PART_INSTALL}/opt/cassandra/lib/debezium/jackson-core-2.19.0.jar https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.19.0/jackson-core-2.19.0.jar
-      curl -L -o ${CRAFT_PART_INSTALL}/opt/cassandra/lib/debezium/jackson-annotations-2.19.0.jar https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.19.0/jackson-annotations-2.19.0.jar
+      # Install extra dependencies for the connector
+      JACKSON_VERSION=2.19.0
+      curl -L \
+        -o ${CRAFT_PART_INSTALL}/opt/cassandra/lib/debezium/jackson-databind-${JACKSON_VERSION}.jar \
+        https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/${JACKSON_VERSION}/jackson-databind-${JACKSON_VERSION}.jar
+      curl -L \
+      -o ${CRAFT_PART_INSTALL}/opt/cassandra/lib/debezium/jackson-core-${JACKSON_VERSION}.jar \
+        https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/${JACKSON_VERSION}/jackson-core-${JACKSON_VERSION}.jar
+      curl -L \
+        -o ${CRAFT_PART_INSTALL}/opt/cassandra/lib/debezium/jackson-annotations-${JACKSON_VERSION}.jar \
+        https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/${JACKSON_VERSION}/jackson-annotations-${JACKSON_VERSION}.jar
 
       chmod -R 755 ${CRAFT_PART_INSTALL}/opt/cassandra/lib/debezium
   wrapper:
