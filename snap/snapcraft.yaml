@@ -1,7 +1,7 @@
 name: charmed-cassandra
 base: core24
 
-version: 5.0.6
+version: 5.0.9
 
 summary: Snap for Apache Cassandra – a distributed NoSQL database
 description: |
@@ -211,9 +211,11 @@ parts:
       cp /etc/ssl/certs/java/cacerts "${trust_store}"
 
       version="$(craftctl get version)"
-      patch="ubuntu1"
+      patch="ubuntu0"
       archive="cassandra-${version}-${patch}-linux-x64.tar.gz"
-      url="https://dlcdn.apache.org/cassandra/${version}/apache-cassandra-${version}-bin.tar.gz"
+      url="https://github.com/canonical/central-uploader/releases/download/"\
+      "apache-cassandra-${version}-${patch}/"\
+      "apache-cassandra-${version}-${patch}-20260821061606-bin.tar.gz"
       curl -L -o "${archive}" "${url}"
       tar -xzvf "${archive}" -C "${CRAFT_PART_INSTALL}/" --strip-components=1
 
